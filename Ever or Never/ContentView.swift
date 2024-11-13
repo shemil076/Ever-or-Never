@@ -8,14 +8,31 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @State private var showSignInView: Bool = false
+    
+    
+    
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        ZStack{
+            NavigationStack{
+//                Text("Nothing here yet, trying to populate the DB")
+//                ProfileView(showSignInView: $showSignInView)
+                GameModeSelectionView()
+//                SettingsView(showSignInView: $showSignInView)
+            }
         }
-        .padding()
+        .onAppear{
+//            let _ = try? QuestionsManager.shared.populateQuestionsCollection()
+            let authUser = try? AuthenticationManager.shared.getAuthenticatedUser()
+            self.showSignInView = authUser == nil 
+        }
+        .fullScreenCover(isPresented: $showSignInView) {
+            NavigationStack{
+                AuthenticationView(showSignInView: $showSignInView)
+            }
+        }
     }
 }
 

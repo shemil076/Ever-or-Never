@@ -8,25 +8,24 @@
 import SwiftUI
 
 struct QuizView: View {
+    @State private var questions: [Question] = []
     var body: some View {
-        VStack{
-            Text("The questio goes here")
-                .padding()
-            
-            Button {
-            
-            } label: {
-                Text("Yes")
-            }.padding()
-
-            Button {
-            
-            } label: {
-                Text("No")
-            }.padding()
+        List(questions) { question in
+            Text(question.question)
             
         }
+        .task {
+            await loadQuestions()
+        }
     }
+    
+    func loadQuestions() async {
+         do {
+              questions = try await QuestionsManager.shared.fetchQuestions()
+         } catch {
+             print("Failed to fetch questions:", error)
+         }
+     }
 }
 
 #Preview {

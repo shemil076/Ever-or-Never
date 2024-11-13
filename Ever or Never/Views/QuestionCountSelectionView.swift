@@ -8,8 +8,28 @@
 import SwiftUI
 
 struct QuestionCountSelectionView: View {
+    @State private var selectedQuestionCount = 5
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack(spacing: 20){
+            Text("Select Number of Questions")
+                .font(.title)
+                .padding()
+            
+            Picker("Question count", selection: $selectedQuestionCount){
+                ForEach(5...20, id: \.self){ count in
+                    Text("\(count)")
+                }
+            }.pickerStyle(.wheel)
+                .padding()
+            
+            NavigationLink {
+                CategorySelectionView(selectedQuestionCount: selectedQuestionCount)
+            } label: {
+                Text("NEXT")
+            }
+
+        }
     }
 }
 
