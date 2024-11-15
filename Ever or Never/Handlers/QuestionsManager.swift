@@ -80,16 +80,94 @@ final class QuestionsManager {
 
     
     
-    func fetchQuestions() async throws -> [Question] {
-        let snapShot = try await questionsCollection.limit(to: 10).getDocuments()
-        
-        let questions = try snapShot.documents.compactMap{ document in
-            try document.data(as : Question.self)
-        }
-        print("Questions fetched: \(questions)")
-        return questions
-    }
+//    func fetchQuestions() async throws -> [Question] {
+//        let snapShot = try await questionsCollection.limit(to: 10).getDocuments()
+//        
+//        let questions = try snapShot.documents.compactMap{ document in
+//            try document.data(as : Question.self)
+//        }
+//        print("Questions fetched: \(questions)")
+//        return questions
+//    }
     
+//    func fetchQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async throws -> [Question] {
+//        let baseCountPerCategory = totalQuestionCount / categoriers.count
+//        var remainingQuestionCount = totalQuestionCount % categoriers.count
+//        
+//        print("baseCountPerCategory: \(baseCountPerCategory)")
+//        
+//    print("remainingQuestionCount: \(remainingQuestionCount)")
+//        
+//        var questions: [Question] = []
+//        
+//        
+//        for category in categoriers {
+//            
+//            let questionCountForCategory = baseCountPerCategory + (remainingQuestionCount > 0 ? 1 : 0)
+//            if remainingQuestionCount > 0 {
+//                remainingQuestionCount -= 1
+//            }
+//            
+//            let snapShot = try await questionsCollection.whereField("category", isEqualTo: category.rawValue).limit(to: questionCountForCategory).getDocuments()
+//            
+//            let categoryQuestions = try snapShot.documents.compactMap{ document in
+//                    try document.data(as : Question.self)
+//            }
+//            
+//            questions.append(contentsOf: categoryQuestions)
+//        }
+//        
+//        print ("Questions fetched: \(questions)")
+//        
+//        questions.shuffle()
+//        print("questions cound is \(questions.count)")
+//        
+//        return questions
+//    }
+    
+    
+    func fetchQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async throws -> [Question]{
+        var questions: [Question] = []
+        var remainingQuestionCount = totalQuestionCount
+        var shortFallQuestions: [Question] = []
+        
+        for category in categoriers {
+            
+            let questionCountForCategory = remainingQuestionCount / (categoriers.count - questions.count / (totalQuestionCount / categoriers.count))
+            
+            let snapShot = try await questionsCollection
+                .whereField("category", isEqualTo: category.rawValue)
+                .limit(to: questionCountForCategory)
+                .getDocuments()
+            
+            let categoryQuestions = try snapShot.documents.compactMap{ document in
+                    try document.data(as : Question.self)
+            }
+            
+            questions.append(contentsOf: categoryQuestions)
+            remainingQuestionCount -= categoryQuestions.count
+            
+            
+            if categoryQuestions.count < questionCountForCategory {
+                shortFallQuestions.append(contentsOf: categoryQuestions)
+            }
+        }
+        
+        if remainingQuestionCount > 0 {
+            let extraSnapShot = try await questionsCollection.limit(to: remainingQuestionCount).getDocuments()
+            let extraQuestions = try extraSnapShot.documents.compactMap{ document in
+                try document.data(as : Question.self)
+            }
+            
+            questions.append(contentsOf: extraQuestions)
+        }
+        
+        questions.shuffle()
+        
+        
+        return Array(questions.prefix(totalQuestionCount))
+        
+    }
     
 }
 

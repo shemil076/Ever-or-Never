@@ -8,9 +8,12 @@
 import SwiftUI
 
 struct CategorySelectionView: View {
-    let selectedQuestionCount : Int
+    @Binding var selectedQuestionCount : Int
     @State private var selectedCategories: [QuestionCategory] = []
-    @State private var availableCategories: [QuestionCategory] = [.adventure,.entertainment]
+    @State private var availableCategories: [QuestionCategory] = QuestionCategory.allCases
+    
+    @StateObject var singleGameSessionViewModel = SinglePlayerSessionViewModel()
+    @State private var isGameSessionReady = false
     var body: some View {
         VStack{
             Text("Select Categories")
@@ -27,42 +30,43 @@ struct CategorySelectionView: View {
                 }
                 
             }
+
             
             Button {
-                Task{
-                    do {
-                        try await initializeGameSession()
-                    }catch {
-                        print(error)
-                    }
-                }
+                Task {
+                               await initializeGameSession()
+                               isGameSessionReady = true // Set to true after initialization completes
+                           }
             } label: {
                 Text("Start Quiz")
             }
+//            .disabled(isGameSessionReady == false)
 
+            
+            NavigationLink(
+                        destination: GameSessionView(singlePlayerViwModel: singleGameSessionViewModel),
+                        isActive: $isGameSessionReady
+                    ) {
+                        EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
+                    }
+
+        }.onAppear{
+            
         }
     }
     
     
-//    Task {
-//        do {
-//            try await viewModel.signUp()
-//            showSignInView = false
-//            return
-//        }catch {
-//
-//            print(error)
-//        }
-//        
-//    }
     
     func initializeGameSession() async {
-        let newGameSession: () = try! await SinglePlayerSessionManager.shared.createInitialQuizSession(userId: "String", numberOfQuestions: selectedQuestionCount, qustionCategories: selectedCategories)
+        
+        print("question count \(selectedQuestionCount)")
+        try? await singleGameSessionViewModel.initializeGameSession(selectedCategories: selectedCategories, selectedQuestionCount: selectedQuestionCount)
+        await singleGameSessionViewModel.loadQuestions(categoriers: selectedCategories, totalQuestionCount: selectedQuestionCount)
     }
 }
 
 #Preview {
-    CategorySelectionView(selectedQuestionCount: 2)
+    CategorySelectionView(selectedQuestionCount: .constant(5))
 }
 
 

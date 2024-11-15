@@ -19,7 +19,7 @@ struct ContentView: View {
             NavigationStack{
 //                Text("Nothing here yet, trying to populate the DB")
 //                ProfileView(showSignInView: $showSignInView)
-                GameModeSelectionView()
+                GameModeSelectionView(showSignInView: $showSignInView)
 //                SettingsView(showSignInView: $showSignInView)
             }
         }

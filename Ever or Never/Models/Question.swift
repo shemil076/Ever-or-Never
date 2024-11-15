@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum QuestionCategory: String, Codable {
+enum QuestionCategory: String, Codable, CaseIterable {
     case general = "General"
     case travel = "Travel"
     case school = "School"
@@ -47,3 +47,16 @@ struct Question:Identifiable, Codable{
     let suitableForAbove: Int
     
 }
+
+
+struct QuestionAnswer: Identifiable , Codable {
+    let id = UUID()  // Unique identifier for each instance
+    var question: String
+    var answer: Bool
+}
+
+struct TypeScore: Codable{
+    let yesAnswerCount : Int
+    let noAnswerCount : Int
+}
+

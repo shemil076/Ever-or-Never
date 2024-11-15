@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct QuestionCountSelectionView: View {
-    @State private var selectedQuestionCount = 5
+    @State private var selectedQuestionCount = 0
     
     var body: some View {
         VStack(spacing: 20){
@@ -24,7 +24,7 @@ struct QuestionCountSelectionView: View {
                 .padding()
             
             NavigationLink {
-                CategorySelectionView(selectedQuestionCount: selectedQuestionCount)
+                CategorySelectionView(selectedQuestionCount: $selectedQuestionCount)
             } label: {
                 Text("NEXT")
             }

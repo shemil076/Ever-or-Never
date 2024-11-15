@@ -15,18 +15,18 @@ struct SinglePlayerQuizSession: Codable{
     let dateCreated: Date
     let userId: String
     let numberOfQuestions: Int
-    let numberOfCorrectAnswers: Int
+    let score: TypeScore
     let questionCategories: [QuestionCategory]
-    let questionIds: [String]
+    let questionsAndAnswers: [QuestionAnswer]
     
-    init(quizSessionId: String = "", dateCreated: Date, userId: String, numberOfQuestions: Int, numberOfCorrectAnswers: Int, questionCategories: [QuestionCategory], questionIds: [String]) {
+    init(quizSessionId: String = "", dateCreated: Date, userId: String, numberOfQuestions: Int, score: TypeScore, questionCategories: [QuestionCategory], questionsAndAnswers: [QuestionAnswer]) {
             self.quizSessionId = quizSessionId
             self.dateCreated = dateCreated
             self.userId = userId
             self.numberOfQuestions = numberOfQuestions
-            self.numberOfCorrectAnswers = numberOfCorrectAnswers
+            self.score = score
             self.questionCategories = questionCategories
-            self.questionIds = questionIds
+            self.questionsAndAnswers = questionsAndAnswers
         }
     
     init(from decoder: any Decoder) throws {
@@ -35,9 +35,9 @@ struct SinglePlayerQuizSession: Codable{
         self.dateCreated = try container.decode(Date.self, forKey: .dateCreated)
         self.userId = try container.decode(String.self, forKey: .userId)
         self.numberOfQuestions = try container.decode(Int.self, forKey: .numberOfQuestions)
-        self.numberOfCorrectAnswers = try container.decode(Int.self, forKey: .numberOfCorrectAnswers)
+        self.score = try container.decode(TypeScore.self, forKey: .score)
         self.questionCategories = try container.decode([QuestionCategory].self, forKey: .questionCategories)
-        self.questionIds = try container.decode([String].self, forKey: .questionIds)
+        self.questionsAndAnswers = try container.decode([QuestionAnswer].self, forKey: .questionsAndAnswers)
     }
     
     enum CodingKeys: String,  CodingKey {
@@ -45,9 +45,9 @@ struct SinglePlayerQuizSession: Codable{
         case dateCreated = "date_created"
         case userId = "user_id"
         case numberOfQuestions = "number_of_questions"
-        case numberOfCorrectAnswers = "number_of_correct_answers"
+        case score = "score"
         case questionCategories = "question_categories"
-        case questionIds = "question_ids"
+        case questionsAndAnswers = "questions_Answers"
     }
     
     func encode(to encoder: any Encoder) throws {
@@ -56,9 +56,9 @@ struct SinglePlayerQuizSession: Codable{
         try container.encode(self.dateCreated, forKey: .dateCreated)
         try container.encode(self.userId, forKey: .userId)
         try container.encode(self.numberOfQuestions, forKey: .numberOfQuestions)
-        try container.encode(self.numberOfCorrectAnswers, forKey: .numberOfCorrectAnswers)
+        try container.encode(self.score, forKey: .score)
         try container.encode(self.questionCategories, forKey: .questionCategories)
-        try container.encode(self.questionIds, forKey: .questionIds)
+        try container.encode(self.questionsAndAnswers, forKey: .questionsAndAnswers)
     }
 }
 
@@ -75,17 +75,19 @@ final class SinglePlayerSessionManager{
         singlePlayerSectionsCollection.document(quizSessionId)
     }
     
-    func createInitialQuizSession(userId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory]) async throws {
+    func createInitialQuizSession(userId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory]) async throws -> String?{
         var newSession = SinglePlayerQuizSession(
             dateCreated: Date(),
             userId: userId,
             numberOfQuestions: numberOfQuestions,
-            numberOfCorrectAnswers: 0,
+            score: TypeScore(yesAnswerCount: 0, noAnswerCount: 0),
             questionCategories: qustionCategories,
-            questionIds:[]
+            questionsAndAnswers:[]
         )
         
         var sessionRef: DocumentReference? = nil
+        
+        var sessionID: String? = nil
         
         do {
             let data = try Firestore.Encoder().encode(newSession)
@@ -110,16 +112,26 @@ final class SinglePlayerSessionManager{
                     }else{
                         newSession.quizSessionId = sessionId
                         print("Session created successfully.")
+                        
+                        sessionID = sessionId
+                        
 //                        completion(.success(newSession))
                     }
                 }
                 
             }
+            return sessionID
+            
+            
         } catch {
 //            completion(.failure(error))
             print("Error creating initial quiz session: \(error.localizedDescription)")
+            return sessionID
+            
         }
     }
+    
+    
     
 }
 

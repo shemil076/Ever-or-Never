@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct GameModeSelectionView: View {
+    @StateObject var profileViewModel = ProfileViewModel() 
+    @Binding var showSignInView : Bool
     var body: some View {
         NavigationView{
             VStack(spacing : 20){
@@ -37,11 +39,26 @@ struct GameModeSelectionView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
             }
+            .task{
+                try? await profileViewModel.loadCurrentUser()
+            }
+            .navigationTitle("Profile")
+                .toolbar{
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        
+                        NavigationLink{
+                            SettingsView(showSignInView: $showSignInView)
+                        } label: {
+                            Image(systemName: "gear")
+                                .font(.headline)
+                        }
+                    }
+                }
             .padding()
         }
     }
 }
 
 #Preview {
-    GameModeSelectionView()
+    GameModeSelectionView(showSignInView: .constant(false))
 }

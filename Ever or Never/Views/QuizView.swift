@@ -21,7 +21,7 @@ struct QuizView: View {
     
     func loadQuestions() async {
          do {
-              questions = try await QuestionsManager.shared.fetchQuestions()
+//              questions = try await QuestionsManager.shared.fetchQuestions()
          } catch {
              print("Failed to fetch questions:", error)
          }
