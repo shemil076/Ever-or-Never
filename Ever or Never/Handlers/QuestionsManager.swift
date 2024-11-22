@@ -127,6 +127,8 @@ final class QuestionsManager {
     
     
     func fetchQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async throws -> [Question]{
+        
+        print("loading questions")
         var questions: [Question] = []
         var remainingQuestionCount = totalQuestionCount
         var shortFallQuestions: [Question] = []

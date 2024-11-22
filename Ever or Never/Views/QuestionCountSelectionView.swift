@@ -9,6 +9,7 @@ import SwiftUI
 
 struct QuestionCountSelectionView: View {
     @State private var selectedQuestionCount = 0
+    @Binding var isMultiplePlayerMode : Bool
     
     var body: some View {
         VStack(spacing: 20){
@@ -24,7 +25,7 @@ struct QuestionCountSelectionView: View {
                 .padding()
             
             NavigationLink {
-                CategorySelectionView(selectedQuestionCount: $selectedQuestionCount)
+                CategorySelectionView(selectedQuestionCount: $selectedQuestionCount, isMultiplePlayerMode: $isMultiplePlayerMode)
             } label: {
                 Text("NEXT")
             }
@@ -34,5 +35,5 @@ struct QuestionCountSelectionView: View {
 }
 
 #Preview {
-    QuestionCountSelectionView()
+    QuestionCountSelectionView(isMultiplePlayerMode: .constant(true))
 }

@@ -22,6 +22,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct Ever_or_NeverApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
+//    @StateObject private var multiPlayerSessionViewModel = MultiplayerSessionViewModel()
+
 
     
     var body: some Scene {
@@ -29,6 +31,7 @@ struct Ever_or_NeverApp: App {
             NavigationStack{
 //                AuthenticationView()
                 ContentView()
+//                    .environmentObject(AppDependancyContainer.shared.multiGameSessionViewModel)
             }
         }
     }

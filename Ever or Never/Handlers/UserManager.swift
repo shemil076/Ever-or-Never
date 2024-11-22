@@ -8,8 +8,8 @@
 import Foundation
 import FirebaseFirestore
 
-struct DBUser: Codable {
-    let userId: String
+struct DBUser: Codable, Identifiable {
+    let id: String
     let dateCreated: Date?
     let email: String?
     let photoURL: String?
@@ -19,7 +19,7 @@ struct DBUser: Codable {
     
     
     init(auth: AuthDataResultModel){
-        self.userId = auth.uid
+        self.id = auth.uid
         self.dateCreated = Date()
         self.email = auth.email
         self.photoURL = auth.photoURL
@@ -29,7 +29,7 @@ struct DBUser: Codable {
     }
     
     init(auth: AuthDataResultModel, displayName: String, dob: Date){
-        self.userId = auth.uid
+        self.id = auth.uid
         self.dateCreated = Date()
         self.email = auth.email
         self.photoURL = auth.photoURL
@@ -38,8 +38,8 @@ struct DBUser: Codable {
         self.dob = dob
     }
     
-    init(userId: String, dateCreated: Date?, email: String?, photoURL: String?, isPremium: Bool, displayName: String, dob: Date){
-        self.userId = userId
+    init(id: String, dateCreated: Date?, email: String?, photoURL: String?, isPremium: Bool, displayName: String, dob: Date){
+        self.id = id
         self.dateCreated = dateCreated
         self.email = email
         self.photoURL = photoURL
@@ -50,22 +50,22 @@ struct DBUser: Codable {
     
     func togglePremuim() -> DBUser{
         let currentPremiumStatus = isPremium
-        return DBUser(userId: userId, dateCreated: dateCreated, email: email, photoURL: photoURL, isPremium: !currentPremiumStatus, displayName: displayName, dob: dob)
+        return DBUser(id: id, dateCreated: dateCreated, email: email, photoURL: photoURL, isPremium: !currentPremiumStatus, displayName: displayName, dob: dob)
     }
      
     enum CodingKeys:String,  CodingKey {
-        case userId = "user_id"
-        case dateCreated = "date_created"
+        case id = "id"
+        case dateCreated = "dateCreated"
         case email = "email"
-        case photoURL = "photo_url"
-        case isPremium = "is_premium"
-        case displayName = "display_name"
+        case photoURL = "photoURL"
+        case isPremium = "isPremium"
+        case displayName = "displayName"
         case dob = "dob"
     }
     
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.userId = try container.decode(String.self, forKey: .userId)
+        self.id = try container.decode(String.self, forKey: .id)
         self.dateCreated = try container.decodeIfPresent(Date.self, forKey: .dateCreated)
         self.email = try container.decodeIfPresent(String.self, forKey: .email)
         self.photoURL = try container.decodeIfPresent(String.self, forKey: .photoURL)
@@ -78,7 +78,7 @@ struct DBUser: Codable {
     
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.userId, forKey: .userId)
+        try container.encode(self.id, forKey: .id)
         try container.encodeIfPresent(self.dateCreated, forKey: .dateCreated)
         try container.encodeIfPresent(self.email, forKey: .email)
         try container.encodeIfPresent(self.photoURL, forKey: .photoURL)
@@ -102,27 +102,27 @@ final class UserManager {
     
 
     
-    private func userDocument(userId: String) -> DocumentReference {
-        userCollection.document(userId)
+    private func userDocument(id: String) -> DocumentReference {
+        userCollection.document(id)
     }
     
     func createNewUser(user: DBUser) async throws{
-        try userDocument(userId: user.userId).setData(from: user, merge: true)
+        try userDocument(id: user.id).setData(from: user, merge: true)
     }
     
      
 
     
-    func getUser(userId: String) async throws -> DBUser{
-        try await userDocument(userId: userId).getDocument(as: DBUser.self)
+    func getUser(id: String) async throws -> DBUser{
+        try await userDocument(id: id).getDocument(as: DBUser.self)
     }
     
     
-    func updateUserPremiumStatus(userId: String, isPremium: Bool) async throws{
+    func updateUserPremiumStatus(id: String, isPremium: Bool) async throws{
         
         let data: [String : Any] = [
             DBUser.CodingKeys.isPremium.rawValue : isPremium
         ]
-        try await userDocument(userId: userId).updateData(data)
+        try await userDocument(id: id).updateData(data)
     }
 }

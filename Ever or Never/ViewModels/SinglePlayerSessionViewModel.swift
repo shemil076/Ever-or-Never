@@ -7,6 +7,8 @@
 
 import Foundation
 
+
+@MainActor
 class SinglePlayerSessionViewModel: ObservableObject{
     
     @Published var currentSessionId : String? = nil
@@ -19,7 +21,9 @@ class SinglePlayerSessionViewModel: ObservableObject{
     
     func loadCurrentUser() async throws {
         let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
-        self.user = try await UserManager.shared.getUser(userId: authDataResult.uid)
+        self.user = try await UserManager.shared.getUser(id: authDataResult.uid)
+        
+        print("User has been loaded")
     }
     
     
@@ -28,13 +32,9 @@ class SinglePlayerSessionViewModel: ObservableObject{
         questions = try! await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
     }
     
-    func initializeGameSession(selectedCategories: [QuestionCategory], selectedQuestionCount: Int) async throws{
+    func initializeGameSession(selectedCategories: [QuestionCategory], totalQuestionCount: Int) async throws{
         try await loadCurrentUser()
-        self.currentSessionId = try! await SinglePlayerSessionManager.shared.createInitialQuizSession(userId: user!.userId, numberOfQuestions: selectedQuestionCount, qustionCategories: selectedCategories)
-        
-        if currentSessionId != nil {
-            print("This is the session id \(String(describing: currentSessionId))")
-        }
+        self.currentSessionId = try! await SinglePlayerSessionManager.shared.createInitialQuizSession(userId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories)
     }
     
     func submitAnswer(questionId: String, answer: Bool){
@@ -52,5 +52,10 @@ class SinglePlayerSessionViewModel: ObservableObject{
         
         yesAnswerCount = count.yes
         noAnswerCount = count.no
+    }
+    
+    func completeGameSession() async{
+        let currentScore = TypeScore(yesAnswerCount: yesAnswerCount, noAnswerCount: noAnswerCount)
+        let _ = try! await SinglePlayerSessionManager.shared.completeSessionByUpdatingData(sessionId: currentSessionId!, score: currentScore, questionsAnswers: answers)
     }
 }

@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct CategorySelectionView: View {
+//    @EnvironmentObject var multiPlayerSessionViewModel : MultiplayerSessionViewModel
+//    @StateObject private var multiPlayerSessionViewModel = MultiplayerSessionViewModel()
     @Binding var selectedQuestionCount : Int
     @State private var selectedCategories: [QuestionCategory] = []
     @State private var availableCategories: [QuestionCategory] = QuestionCategory.allCases
+    @Binding var isMultiplePlayerMode: Bool
     
     @StateObject var singleGameSessionViewModel = SinglePlayerSessionViewModel()
+    
     @State private var isGameSessionReady = false
     var body: some View {
         VStack{
@@ -30,26 +34,36 @@ struct CategorySelectionView: View {
                 }
                 
             }
-
+            
             
             Button {
                 Task {
-                               await initializeGameSession()
-                               isGameSessionReady = true // Set to true after initialization completes
-                           }
+                    print("isMultiplePlayerMode: \(isMultiplePlayerMode)")
+                    await initializeGameSession(isMultiplePlayerMode: isMultiplePlayerMode)
+                    isGameSessionReady = true //
+                }
             } label: {
                 Text("Start Quiz")
             }
-//            .disabled(isGameSessionReady == false)
-
+            //            .disabled(isGameSessionReady == false)
             
-            NavigationLink(
-                        destination: GameSessionView(singlePlayerViwModel: singleGameSessionViewModel),
-                        isActive: $isGameSessionReady
-                    ) {
-                        EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
-                    }
-
+            
+            if !isMultiplePlayerMode{
+                NavigationLink(
+                    destination: GameSessionView(singlePlayerViwModel: singleGameSessionViewModel),
+                    isActive: $isGameSessionReady
+                ) {
+                    EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
+                }
+            }else{
+                NavigationLink(
+                    destination: MultiplayLobby(),
+                    isActive: $isGameSessionReady
+                ) {
+                    EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
+                }
+            }
+            
         }.onAppear{
             
         }
@@ -57,16 +71,23 @@ struct CategorySelectionView: View {
     
     
     
-    func initializeGameSession() async {
+    func initializeGameSession(isMultiplePlayerMode : Bool) async {
         
         print("question count \(selectedQuestionCount)")
-        try? await singleGameSessionViewModel.initializeGameSession(selectedCategories: selectedCategories, selectedQuestionCount: selectedQuestionCount)
-        await singleGameSessionViewModel.loadQuestions(categoriers: selectedCategories, totalQuestionCount: selectedQuestionCount)
+        if !isMultiplePlayerMode{
+            print("not multiple player")
+            try? await singleGameSessionViewModel.initializeGameSession(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
+            await singleGameSessionViewModel.loadQuestions(categoriers: selectedCategories, totalQuestionCount: selectedQuestionCount)
+        }else{
+            print("multiple player")
+            
+            try? await MultiplayerSessionViewModel.shared.initializeMultiplayerGameSessions(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
+        }
     }
 }
 
 #Preview {
-    CategorySelectionView(selectedQuestionCount: .constant(5))
+    CategorySelectionView(selectedQuestionCount: .constant(5), isMultiplePlayerMode: .constant(true))
 }
 
 

@@ -11,7 +11,7 @@ import Foundation
 import FirebaseFirestore
 
 struct SinglePlayerQuizSession: Codable{
-    var quizSessionId: String
+    var id: String
     let dateCreated: Date
     let userId: String
     let numberOfQuestions: Int
@@ -19,8 +19,8 @@ struct SinglePlayerQuizSession: Codable{
     let questionCategories: [QuestionCategory]
     let questionsAndAnswers: [QuestionAnswer]
     
-    init(quizSessionId: String = "", dateCreated: Date, userId: String, numberOfQuestions: Int, score: TypeScore, questionCategories: [QuestionCategory], questionsAndAnswers: [QuestionAnswer]) {
-            self.quizSessionId = quizSessionId
+    init(id: String = "", dateCreated: Date, userId: String, numberOfQuestions: Int, score: TypeScore, questionCategories: [QuestionCategory], questionsAndAnswers: [QuestionAnswer]) {
+            self.id = id
             self.dateCreated = dateCreated
             self.userId = userId
             self.numberOfQuestions = numberOfQuestions
@@ -31,7 +31,7 @@ struct SinglePlayerQuizSession: Codable{
     
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.quizSessionId = try container.decode(String.self, forKey: .quizSessionId)
+        self.id = try container.decode(String.self, forKey: .id)
         self.dateCreated = try container.decode(Date.self, forKey: .dateCreated)
         self.userId = try container.decode(String.self, forKey: .userId)
         self.numberOfQuestions = try container.decode(Int.self, forKey: .numberOfQuestions)
@@ -41,18 +41,18 @@ struct SinglePlayerQuizSession: Codable{
     }
     
     enum CodingKeys: String,  CodingKey {
-        case quizSessionId = "quiz_session_id"
-        case dateCreated = "date_created"
-        case userId = "user_id"
-        case numberOfQuestions = "number_of_questions"
+        case id = "id"
+        case dateCreated = "dateCreated"
+        case userId = "userId"
+        case numberOfQuestions = "numberOfQuestions"
         case score = "score"
-        case questionCategories = "question_categories"
-        case questionsAndAnswers = "questions_Answers"
+        case questionCategories = "questionCategories"
+        case questionsAndAnswers = "questionsAndAnswers"
     }
     
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.quizSessionId, forKey: .quizSessionId)
+        try container.encode(self.id, forKey: .id)
         try container.encode(self.dateCreated, forKey: .dateCreated)
         try container.encode(self.userId, forKey: .userId)
         try container.encode(self.numberOfQuestions, forKey: .numberOfQuestions)
@@ -69,13 +69,15 @@ final class SinglePlayerSessionManager{
         
     }
     
-    private let singlePlayerSectionsCollection = Firestore.firestore().collection("singlePlayerSections")
+    private let singlePlayerSessionCollection = Firestore.firestore().collection("singlePlayerSession")
     
     private func singlePlayerDocument(quizSessionId: String) -> DocumentReference {
-        singlePlayerSectionsCollection.document(quizSessionId)
+        singlePlayerSessionCollection.document(quizSessionId)
     }
     
     func createInitialQuizSession(userId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory]) async throws -> String?{
+        
+        print("userId: \(userId)")
         var newSession = SinglePlayerQuizSession(
             dateCreated: Date(),
             userId: userId,
@@ -84,42 +86,52 @@ final class SinglePlayerSessionManager{
             questionCategories: qustionCategories,
             questionsAndAnswers:[]
         )
-        
-        var sessionRef: DocumentReference? = nil
-        
+                
         var sessionID: String? = nil
         
         do {
             let data = try Firestore.Encoder().encode(newSession)
-            sessionRef = singlePlayerSectionsCollection.addDocument(data: data){ error in
-                if let error = error{
-//                    throw URLError(.badServerResponse)
-                    print("Error adding document: \(error.localizedDescription)")
-                    return
-                }
-                
-                guard let sessionId = sessionRef?.documentID else {
-//                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve session ID."])))
-                    print("Failed to retrieve session ID.")
-                    return
-                }
-                
-                sessionRef?.updateData(["quiz_session_id": sessionId]) { updatedError in
-                    if let updatedError {
-//                        completion(.failure(updatedError))
-                        print("Error updating document: \(updatedError.localizedDescription)")
-                        return
-                    }else{
-                        newSession.quizSessionId = sessionId
-                        print("Session created successfully.")
-                        
-                        sessionID = sessionId
-                        
-//                        completion(.success(newSession))
-                    }
-                }
-                
-            }
+//            sessionRef = singlePlayerSectionsCollection.addDocument(data: data){ error in
+//                if let error = error{
+////                    throw URLError(.badServerResponse)
+//                    print("Error adding document: \(error.localizedDescription)")
+//                    return
+//                }
+//                
+//                guard let sessionId = sessionRef?.documentID else {
+////                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve session ID."])))
+//                    print("Failed to retrieve session ID.")
+//                    return
+//                }
+//                
+//                sessionRef?.updateData(["quiz_session_id": sessionId]) { updatedError in
+//                    if let updatedError {
+////                        completion(.failure(updatedError))
+//                        print("Error updating document: \(updatedError.localizedDescription)")
+//                        return
+//                    }else{
+//                        newSession.quizSessionId = sessionId
+//                        print("Session created successfully.")
+//                        
+//                        sessionID = sessionId
+//                        
+////                        completion(.success(newSession))
+//                    }
+//                }
+//                
+//            }
+            
+            
+            
+            let documentRef = try await singlePlayerSessionCollection.addDocument(data: data)
+            sessionID = documentRef.documentID
+            
+            try await documentRef.updateData(["id": sessionID!])
+            
+            newSession.id = sessionID!
+            print("Session created successfully with ID: \(sessionID!)")
+            
+            
             return sessionID
             
             
@@ -132,6 +144,42 @@ final class SinglePlayerSessionManager{
     }
     
     
+    func completeSessionByUpdatingData(sessionId : String, score : TypeScore , questionsAnswers : [QuestionAnswer]) async throws{
+        
+        let data: [String: Any] = [
+                "score": [
+                    "yesAnswerCount": score.yesAnswerCount,
+                    "noAnswerCount": score.noAnswerCount
+                ],
+                "questionsAndAnswers": questionsAnswers.map { questionAnswer in
+                    [
+                        "questionId": questionAnswer.question,
+                        "answer": questionAnswer.answer
+                    ]
+                },
+                "dateCompleted": FieldValue.serverTimestamp()
+            ]
+        
+        
+        let documentRef = singlePlayerSessionCollection.document(sessionId)
+           
+           do {
+               // Update the document in Firestore
+               try await documentRef.updateData(data)
+               print("Session \(sessionId) updated successfully.")
+           } catch {
+               print("Failed to update session \(sessionId): \(error.localizedDescription)")
+               throw error
+           }
+    }
+    
+//    func updateUserPremiumStatus(userId: String, isPremium: Bool) async throws{
+//        
+//        let data: [String : Any] = [
+//            DBUser.CodingKeys.isPremium.rawValue : isPremium
+//        ]
+//        try await userDocument(userId: userId).updateData(data)
+//    }
     
 }
 

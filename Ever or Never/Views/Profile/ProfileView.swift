@@ -11,10 +11,11 @@ import SwiftUI
 final class ProfileViewModel: ObservableObject {
     
     @Published private(set) var user: DBUser? = nil
+   
     
     func loadCurrentUser() async throws {
         let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
-        self.user = try await UserManager.shared.getUser(userId: authDataResult.uid)
+        self.user = try await UserManager.shared.getUser(id: authDataResult.uid)
     }
     
     func togglePremiumStatus()async throws{
@@ -22,8 +23,8 @@ final class ProfileViewModel: ObservableObject {
         let currentPremiumStatus = user.isPremium
         
         Task{
-            try await UserManager.shared.updateUserPremiumStatus(userId: user.userId, isPremium: !currentPremiumStatus)
-            self.user = try await UserManager.shared.getUser(userId: user.userId)
+            try await UserManager.shared.updateUserPremiumStatus(id: user.id, isPremium: !currentPremiumStatus)
+            self.user = try await UserManager.shared.getUser(id: user.id)
         }
         
     }
@@ -36,7 +37,7 @@ struct ProfileView: View {
     var body: some View {
         List{
              if let user = profileViewModel.user {
-                 Text("UserId: \(user.userId)")
+                 Text("UserId: \(user.id)")
                  Text("Email: \(user.email)")
                  Text("profile created date: \(user.dateCreated)")
                  

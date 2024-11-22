@@ -30,6 +30,8 @@ enum QuestionCategory: String, Codable, CaseIterable {
         
         // Attempt to match with the enum cases
         self = QuestionCategory(rawValue: value.capitalized) ?? .general
+        
+        print("done decodeing")
     }
 }
 
@@ -50,7 +52,7 @@ struct Question:Identifiable, Codable{
 
 
 struct QuestionAnswer: Identifiable , Codable {
-    let id = UUID()  // Unique identifier for each instance
+    var id = UUID()  // Unique identifier for each instance
     var question: String
     var answer: Bool
 }
@@ -60,3 +62,14 @@ struct TypeScore: Codable{
     let noAnswerCount : Int
 }
 
+
+struct MultiplayerAnswer: Codable{
+    let playerId: String
+    let answer: Bool
+}
+
+struct MultiplayerQuestionAnswer : Identifiable, Codable{
+    var id : String
+    var question: String
+    var answers: [MultiplayerAnswer]
+}

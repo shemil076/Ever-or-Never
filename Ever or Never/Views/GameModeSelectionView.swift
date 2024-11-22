@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct GameModeSelectionView: View {
-    @StateObject var profileViewModel = ProfileViewModel() 
+    @StateObject var profileViewModel = ProfileViewModel()
     @Binding var showSignInView : Bool
     var body: some View {
         NavigationView{
@@ -17,7 +17,7 @@ struct GameModeSelectionView: View {
                     .font(.title)
                     .padding()
                 
-                NavigationLink(destination: QuestionCountSelectionView()){
+                NavigationLink(destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(false))){
                     Text("Single Player")
                         .font(.headline)
                         .padding()
@@ -28,16 +28,16 @@ struct GameModeSelectionView: View {
                     
                 }
                 
-                Button("Multiplayer") {
-                    // Placeholder for future multiplayer logic
+                NavigationLink(destination: MultiplayerOptionView()){
+                    Text("Multiplayer")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    
                 }
-                .disabled(true) // Disable until multiplayer is implemented
-                .font(.headline)
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(8)
             }
             .task{
                 try? await profileViewModel.loadCurrentUser()

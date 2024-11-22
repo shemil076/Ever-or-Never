@@ -31,6 +31,10 @@ struct ScoreView: View {
         }
         .onAppear{
             singlePlayerViwModel.calculateScore()
+            
+            Task{
+                await singlePlayerViwModel.completeGameSession()
+            }
         }
     }
 }

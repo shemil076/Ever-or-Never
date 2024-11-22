@@ -1,0 +1,294 @@
+//
+//  MultiplayerSessionManager.swift
+//  Ever or Never
+//
+//  Created by Pramuditha Karunarathna on 2024-11-18.
+//
+
+import Foundation
+import FirebaseFirestore
+
+struct MultiplayerQuizSession: Codable{
+    var id: String
+    let dateCreated: Date
+    let hostId: String
+    let numberOfQuestions: Int
+    let questionCategories: [QuestionCategory]
+    let questionsAndAnswers: [MultiplayerQuestionAnswer]
+    let participants: [String]
+    let questions : [Question]
+    let isGameEnded: Bool
+    let isGameStarted: Bool
+    
+    
+    init(id: String = "", dateCreated: Date, hostId: String, numberOfQuestions: Int, questionCategories: [QuestionCategory], questionsAndAnswers: [MultiplayerQuestionAnswer], participants: [String], questions: [Question], isGameEnded: Bool, isGameStarted: Bool) {
+        self.id = id
+        self.dateCreated = dateCreated
+        self.hostId = hostId
+        self.numberOfQuestions = numberOfQuestions
+        self.questionCategories = questionCategories
+        self.questionsAndAnswers = questionsAndAnswers
+        self.participants = participants
+        self.questions = questions
+        self.isGameEnded = isGameEnded
+        self.isGameStarted = isGameStarted
+    }
+    
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.dateCreated, forKey: .dateCreated)
+        try container.encode(self.hostId, forKey: .hostId)
+        try container.encode(self.numberOfQuestions, forKey: .numberOfQuestions)
+        try container.encode(self.questionCategories, forKey: .questionCategories)
+        try container.encode(self.questionsAndAnswers, forKey: .questionsAndAnswers)
+        try container.encode(self.participants, forKey: .participants)
+        try container.encode(self.questions, forKey: .questions)
+        try container.encode(self.isGameEnded, forKey: .isGameEnded)
+        try container.encode(self.isGameStarted, forKey: .isGameStarted)
+    }
+    
+    enum CodingKeys:String, CodingKey {
+        case id = "id"
+        case dateCreated = "dateCreated"
+        case hostId = "hostId"
+        case numberOfQuestions = "numberOfQuestions"
+        case questionCategories = "questionCategories"
+        case questionsAndAnswers = "questionsAndAnswers"
+        case participants = "participants"
+        case questions = "questions"
+        case isGameEnded = "isGameEnded"
+        case isGameStarted = "isGameStarted"
+    }
+    
+    init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? ""
+            self.dateCreated = try container.decodeIfPresent(Date.self, forKey: .dateCreated) ?? Date()
+            self.hostId = try container.decodeIfPresent(String.self, forKey: .hostId) ?? ""
+            self.numberOfQuestions = try container.decodeIfPresent(Int.self, forKey: .numberOfQuestions) ?? 0
+            self.questionCategories = try container.decodeIfPresent([QuestionCategory].self, forKey: .questionCategories) ?? []
+            self.questionsAndAnswers = try container.decodeIfPresent([MultiplayerQuestionAnswer].self, forKey: .questionsAndAnswers) ?? []
+            self.participants = try container.decodeIfPresent([String].self, forKey: .participants) ?? []
+            self.questions = try container.decodeIfPresent([Question].self, forKey: .questions) ?? []
+            self.isGameEnded = try container.decodeIfPresent(Bool.self, forKey: .isGameEnded) ?? false
+            self.isGameStarted = try container.decodeIfPresent(Bool.self, forKey: .isGameStarted) ?? false
+        }
+    
+}
+
+final class MultiplayerSessionManager{
+    static let shared = MultiplayerSessionManager()
+    
+    
+    private init() {
+        
+    }
+    
+    private let multiplayerSessionCollection = Firestore.firestore().collection("multiplayerSession")
+    
+    private var dbListener: ListenerRegistration?
+    
+    
+    func createMultiplayerSession(hostId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory], qustions: [Question] ) async throws -> (sessionId: String?, hostId: String){
+        print("Inside this function")
+        var newSession = MultiplayerQuizSession(
+            dateCreated: Date(),
+            hostId: hostId,
+            numberOfQuestions: numberOfQuestions,
+            questionCategories: qustionCategories,
+            questionsAndAnswers: [],
+            participants: [hostId],
+            questions:  qustions,
+            isGameEnded: false,
+            isGameStarted: false
+        )
+        
+        var sessionId: String?
+        
+        do {
+            let data = try Firestore.Encoder().encode(newSession)
+            
+            let documentRef = try await multiplayerSessionCollection.addDocument(data: data)
+            sessionId = documentRef.documentID
+            
+            try await documentRef.updateData(["id": sessionId!])
+            
+            newSession.id = sessionId!
+            print("Session created successfully with ID: \(sessionId!)")
+            
+            return (sessionId, hostId)
+        }catch{
+            print("Error creating initial quiz session: \(error.localizedDescription)")
+            return (sessionId, hostId)
+        }
+    }
+    
+    
+    func joinMultiplayerSession(sessionId: String, userId: String){
+        
+        let sessionRef = multiplayerSessionCollection.document(sessionId)
+        
+        sessionRef.updateData([
+            "participants": FieldValue.arrayUnion([userId])
+        ]){ error in
+            if let error = error {
+                print("Error occured while joining multiplayer session: \(error.localizedDescription)")
+            }
+            print("Player \(userId) successfully joined the multiplayer session \(sessionId).")
+        }
+    }
+    
+    
+    func observeParticipants(sessionId : String, onUpdate: @escaping ([String]) -> Void, onError: @escaping (Error)-> Void){
+        let sessionRef = multiplayerSessionCollection.document(sessionId)
+        
+        sessionRef.addSnapshotListener { snapshot, error in
+            if let error = error {
+                onError(error)
+            }
+            
+            guard let snapshot = snapshot,
+            let data = snapshot.data(),
+            let participants = data["participants"] as? [String] else {
+                onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid participants data."]))
+                return
+            }
+            
+            onUpdate(participants)
+        }
+    }
+    
+    func fetchSession(sessionId: String) async throws -> MultiplayerQuizSession {
+        let document = try await multiplayerSessionCollection.document(sessionId).getDocument()
+        
+        print("Found the document")
+        
+        guard let data = document.data() else {
+            print("No data related to session Id \(sessionId) was found")
+            throw NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Session not found."])
+        }
+        
+        print("Trying to decode the data")
+        
+        do {
+            // Attempt to decode the session data
+            let session = try Firestore.Decoder().decode(MultiplayerQuizSession.self, from: data)
+            print("Session re-fetched successfully: \(session)")
+            return session
+        } catch {
+            // Catch and print the decoding error
+            print("Decoding error: \(error)")
+            throw NSError(domain: "MultiplayerSession", code: -2, userInfo: [NSLocalizedDescriptionKey: "Decoding error: \(error.localizedDescription)"])
+        }
+    }
+
+    
+    func submitAnswer(sessionId: String, questionId: String, question: String, answer: Bool, userId: String) async throws -> MultiplayerQuizSession {
+        let documentRef =  multiplayerSessionCollection.document(sessionId)
+        
+        let sessionSnapShot = try await documentRef.getDocument()
+        
+        guard let sessionData = sessionSnapShot.data() else {
+            throw NSError(domain: "Session not found", code: 404)
+        }
+        
+        var questionsAndAnswers = sessionData["questionsAndAnswers"] as? [[String: Any]] ?? []
+        
+        if let questionIndex = questionsAndAnswers.firstIndex(where: { $0["question"] as? String == question}){
+            var questionData = questionsAndAnswers[questionIndex]
+            var answers = questionData["answers"] as? [[String: Any]] ?? []
+            
+            let newAnswer: [String: Any] = [
+                "playerId" : userId,
+                "answer" : answer
+            ]
+            answers.append(newAnswer)
+            
+            questionData["answers"] = answers
+            questionsAndAnswers[questionIndex] = questionData
+        }else{
+            let newQuestion: [String: Any] = [
+                "question" : question,
+                "id": questionId,
+                "answers" : [
+                        [
+                            "playerId" : userId,
+                            "answer" : answer
+                        ]
+                    ]
+                ]
+            
+            questionsAndAnswers.append(newQuestion)
+        }
+        
+        try await documentRef.updateData(["questionsAndAnswers": questionsAndAnswers])
+        
+        print("Answer successfully submitted for question '\(question)' in session \(sessionId).")
+        return try await fetchSession(sessionId: sessionId)
+
+    }
+    
+    
+    
+    func observeSessionState(
+        for sessionId: String,
+        onUpdate: @escaping (Bool, Bool) -> Void,
+        onError: @escaping (Error) -> Void
+    ) {
+        dbListener = multiplayerSessionCollection.document(sessionId)
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    print("Error fetching session data: \(error.localizedDescription)")
+                    onError(error)
+                    return
+                }
+
+                guard let snapshot = snapshot,
+                      let sessionData = snapshot.data(),
+                      let isGameStarted = sessionData["isGameStarted"] as? Bool,
+                      let isGameEnded = sessionData["isGameEnded"] as? Bool else {
+                    onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid session data."]))
+                    return
+                }
+
+                print("Session state updated: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
+                onUpdate(isGameStarted, isGameEnded)
+            }
+    }
+    
+
+    func stopObservingSessionState(){
+        dbListener?.remove()
+    }
+    
+    func startQuiz(for sessionId: String) -> Bool{
+        print("Starting game for session: \(sessionId)")
+        var isGameStarted : Bool = false
+        multiplayerSessionCollection.document(sessionId).updateData(["isGameStarted": true]) { error in
+            if let error = error {
+                print("Error starting game: \(error.localizedDescription)")
+            }else {
+                print("Game started successfully")
+                isGameStarted = true
+                print("Session: \(sessionId) is now active")
+            }
+        }
+        return isGameStarted
+    }
+    
+    func endQuiz(for sessionId: String) -> Bool{
+        var isGameEnded : Bool = false
+        multiplayerSessionCollection.document(sessionId).updateData(["isGameEnded": true]) { error in
+            if let error = error {
+                print("Error starting game: \(error.localizedDescription)")
+            }else {
+                print("Game started successfully")
+                isGameEnded = true
+            }
+        }
+        return isGameEnded
+    }
+}
+
