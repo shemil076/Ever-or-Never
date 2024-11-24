@@ -62,7 +62,7 @@ struct MultiplayLobby: View {
         }
         .onDisappear {
             multiplaySessionViewModel.stopObservingParticipants()
-            multiplaySessionViewModel.stopObservingSessionState()
+            multiplaySessionViewModel.stopObservingSession()
         }
         .onChange(of: multiplaySessionViewModel.isGameStarted) { isGameStarted in
                    if isGameStarted {

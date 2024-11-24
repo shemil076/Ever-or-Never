@@ -63,12 +63,13 @@ struct TypeScore: Codable{
 }
 
 
-struct MultiplayerAnswer: Codable{
+struct MultiplayerAnswer: Identifiable, Codable, Equatable{
+    var id = UUID()
     let playerId: String
     let answer: Bool
 }
 
-struct MultiplayerQuestionAnswer : Identifiable, Codable{
+struct MultiplayerQuestionAnswer : Identifiable, Codable, Equatable{
     var id : String
     var question: String
     var answers: [MultiplayerAnswer]

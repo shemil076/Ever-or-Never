@@ -10,6 +10,7 @@ import SwiftUI
 struct MultiplayerQuizView: View {
     @StateObject private var multiplaySessionViewModel = MultiplayerSessionViewModel.shared
     @State private var currentQuestionIndex: Int = 0
+    @State private var showAnswer: Bool = false
     var body: some View {
         VStack {
             if !multiplaySessionViewModel.questions.isEmpty && currentQuestionIndex < multiplaySessionViewModel.questions.count {
@@ -25,7 +26,8 @@ struct MultiplayerQuizView: View {
                                 await multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[currentQuestionIndex].id, answer: true)
                                 
                             }
-                            currentQuestionIndex += 1
+                            showAnswer = true
+//                            currentQuestionIndex += 1
                             
                         } else {
                             // End of quiz logic
@@ -44,11 +46,19 @@ struct MultiplayerQuizView: View {
                                 await    multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[currentQuestionIndex].id, answer: false)
                             }
                             
-                            currentQuestionIndex += 1
+//                            currentQuestionIndex += 1
+                            showAnswer = true
                         } else {
                             // End of quiz logic
                         }
                     }
+                }
+                
+                NavigationLink(
+                    destination: MultiplayerAnswersView(),
+                    isActive: $showAnswer
+                ){
+                    EmptyView()
                 }
             }else{
                 
@@ -62,3 +72,21 @@ struct MultiplayerQuizView: View {
 #Preview {
     MultiplayerQuizView()
 }
+
+
+//
+//Button {
+//    Task{
+//        try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
+//        isGameSessionReady = true
+//    }
+//} label: {
+//    Text("Start Quiz")
+//}
+//
+//NavigationLink(
+//    destination: MultiplayLobby(),
+//    isActive: $isGameSessionReady
+//) {
+//    EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
+//}

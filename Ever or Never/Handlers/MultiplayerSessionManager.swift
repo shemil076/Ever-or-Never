@@ -88,7 +88,7 @@ final class MultiplayerSessionManager{
     
     private let multiplayerSessionCollection = Firestore.firestore().collection("multiplayerSession")
     
-    private var dbListener: ListenerRegistration?
+//    private var dbListener: ListenerRegistration?
     
     
     func createMultiplayerSession(hostId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory], qustions: [Question] ) async throws -> (sessionId: String?, hostId: String){
@@ -163,19 +163,19 @@ final class MultiplayerSessionManager{
     func fetchSession(sessionId: String) async throws -> MultiplayerQuizSession {
         let document = try await multiplayerSessionCollection.document(sessionId).getDocument()
         
-        print("Found the document")
+//        print("Found the document")
         
         guard let data = document.data() else {
             print("No data related to session Id \(sessionId) was found")
             throw NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Session not found."])
         }
         
-        print("Trying to decode the data")
+//        print("Trying to decode the data")
         
         do {
             // Attempt to decode the session data
             let session = try Firestore.Decoder().decode(MultiplayerQuizSession.self, from: data)
-            print("Session re-fetched successfully: \(session)")
+//            print("Session re-fetched successfully: \(session)")
             return session
         } catch {
             // Catch and print the decoding error
@@ -201,6 +201,7 @@ final class MultiplayerSessionManager{
             var answers = questionData["answers"] as? [[String: Any]] ?? []
             
             let newAnswer: [String: Any] = [
+                "id": UUID().uuidString,
                 "playerId" : userId,
                 "answer" : answer
             ]
@@ -214,6 +215,7 @@ final class MultiplayerSessionManager{
                 "id": questionId,
                 "answers" : [
                         [
+                            "id": UUID().uuidString,
                             "playerId" : userId,
                             "answer" : answer
                         ]
@@ -232,36 +234,51 @@ final class MultiplayerSessionManager{
     
     
     
-    func observeSessionState(
+    func observeSession(
         for sessionId: String,
-        onUpdate: @escaping (Bool, Bool) -> Void,
+        lookingFor: LookingFor,
+        onUpdate: @escaping (Any) -> Void,
         onError: @escaping (Error) -> Void
     ) {
-        dbListener = multiplayerSessionCollection.document(sessionId)
-            .addSnapshotListener { snapshot, error in
+        let sessionRef = multiplayerSessionCollection.document(sessionId)
+        
+        sessionRef.addSnapshotListener { snapshot, error in
                 if let error = error {
                     print("Error fetching session data: \(error.localizedDescription)")
                     onError(error)
                     return
                 }
 
-                guard let snapshot = snapshot,
-                      let sessionData = snapshot.data(),
-                      let isGameStarted = sessionData["isGameStarted"] as? Bool,
-                      let isGameEnded = sessionData["isGameEnded"] as? Bool else {
-                    onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid session data."]))
-                    return
-                }
+                if lookingFor == LookingFor.forStates{
+                    guard let snapshot = snapshot,
+                          let sessionData = snapshot.data(),
+                          let isGameStarted = sessionData["isGameStarted"] as? Bool,
+                          let isGameEnded = sessionData["isGameEnded"] as? Bool else {
+                        onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid session data."]))
+                        return
+                    }
 
-                print("Session state updated: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
-                onUpdate(isGameStarted, isGameEnded)
+                    print("Session state updated: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
+                    onUpdate((isGameStarted, isGameEnded))
+                }
+                
+                if lookingFor == LookingFor.forAnswer{
+                    guard let snapshot = snapshot,
+                          let sessionData = snapshot.data(),
+                          let answers = sessionData["questionsAndAnswers"] as? [[String: Any]] else {
+                        onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid session data."]))
+                        return
+                    }
+                    onUpdate(answers)
+                }
             }
     }
     
 
-    func stopObservingSessionState(){
-        dbListener?.remove()
-    }
+
+//    func stopObservingSession(){
+//        dbListener?.remove()
+//    }
     
     func startQuiz(for sessionId: String) -> Bool{
         print("Starting game for session: \(sessionId)")

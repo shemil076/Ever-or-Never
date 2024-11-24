@@ -26,7 +26,7 @@ class MultiplayerSessionViewModel: ObservableObject {
     @Published var hostId: String = ""
     @Published var isGameStarted : Bool = false
     @Published var isGameEnded : Bool = false
-    
+    @Published var currentQuestionIndex: Int = 0
     @Published private(set) var user: DBUser? = nil
     
     private var participantListener: ListenerRegistration?
@@ -36,14 +36,11 @@ class MultiplayerSessionViewModel: ObservableObject {
         let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
         print("auth data fetched", authDataResult)
         self.user = try await UserManager.shared.getUser(id: authDataResult.uid)
-        print("user Fetched \(user?.id)")
     }
     
     
     
     func loadQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async {
-        print("number of categories: \(categoriers.count)")
-        print("total questions: \(totalQuestionCount)")
         questions = try! await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
         print("Questions were loaded")
     }
@@ -132,7 +129,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         for userId in userIds {
             do {
                 let user = try await UserManager.shared.getUser(id: userId)
-                print(user)
+//                print(user)
                 fetchedUsers.append(user)
             } catch {
                 print("Error fetching user \(userId): \(error.localizedDescription)")
@@ -176,7 +173,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             let gameStarted = MultiplayerSessionManager.shared.startQuiz(for: currentSessionId)
                 self.isGameStarted = gameStarted
                 print("gameStarted: \(gameStarted)")
-            print("isGameStarted: \(self.isGameStarted)")
+//            print("isGameStarted: \(self.isGameStarted)")
             }
     }
     
@@ -196,13 +193,16 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
 
-        MultiplayerSessionManager.shared.observeSessionState(
+        MultiplayerSessionManager.shared.observeSession(
             for: currentSessionId,
-            onUpdate: { [weak self] isGameStarted, isGameEnded in
+            lookingFor: .forStates,
+            onUpdate: { [weak self] update in
                 DispatchQueue.main.async {
-                    self?.isGameStarted = isGameStarted
-                    self?.isGameEnded = isGameEnded
-                    print("Session state: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
+                    if let (isGameStarted, isGameEnded) = update as? (Bool, Bool){
+                        self?.isGameStarted = isGameStarted
+                        self?.isGameEnded = isGameEnded
+//                        print("Session state: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
+                    }
                 }
             },
             onError: { error in
@@ -211,11 +211,110 @@ class MultiplayerSessionViewModel: ObservableObject {
         )
     }
     
+    
+//    func observeSessionAnswers(){
+//        DispatchQueue.main.async {
+//            self.answers = [] // Reset participants list on the main thread
+//        }
+//        guard let currentSessionId else {
+//            print("No session ID available")
+//            return
+//        }
+//        
+//        MultiplayerSessionManager.shared.observeSession(
+//            for: currentSessionId,
+//            lookingFor: .forAnswer,
+//            onUpdate: { [weak self] updatedAnswers in
+//                guard let self = self else { return }
+//                
+//                guard let answesr = updatedAnswers as? [MultiplayerQuestionAnswer] else{
+//                    return
+//                }
+//                
+//                
+//                
+//                if !answesr.isEmpty{
+//                    DispatchQueue.main.async {
+//                        print("Updated answers: \(updatedAnswers)")
+//                        self.answers = answesr
+//                        
+//                        print("Session answers: \(updatedAnswers)")
+//                    }
+//                } else {
+//                    print("Answers are empty   \(updatedAnswers)")
+//                }
+//            
+//                
+//            },
+//            onError: { error in
+//                print("Error observing session: \(error)")
+//                
+//            }
+//        )
+//    }
+    
+    
+    func observeSessionAnswers() {
+        DispatchQueue.main.async {
+            self.answers = [] // Reset the answers list on the main thread
+        }
+        guard let currentSessionId else {
+            print("No session ID available")
+            return
+        }
+        
+        MultiplayerSessionManager.shared.observeSession(
+            for: currentSessionId,
+            lookingFor: .forAnswer,
+            onUpdate: { [weak self] updatedAnswers in
+                guard let self = self else { return }
+                
+                guard let questionsArray = updatedAnswers as? [[String: Any]] else {
+                    print("Invalid answers format: \(updatedAnswers)")
+                    return
+                }
+                
+                let parsedQuestions = questionsArray.compactMap { questionDict -> MultiplayerQuestionAnswer? in
+                    guard
+                        let id = questionDict["id"] as? String,
+                        let question = questionDict["question"] as? String,
+                        let answersArray = questionDict["answers"] as? [[String: Any]]
+                    else { return nil }
+                    
+                    let parsedAnswers = answersArray.compactMap { answerDict -> MultiplayerAnswer? in
+                        guard
+                            let playerId = answerDict["playerId"] as? String,
+                            let answer = answerDict["answer"] as? Bool
+                        else { return nil }
+                        return MultiplayerAnswer(playerId: playerId, answer: answer)
+                    }
+                    
+                    return MultiplayerQuestionAnswer(id: id, question: question, answers: parsedAnswers)
+                }
+                
+                DispatchQueue.main.async {
+                    if self.answers != parsedQuestions {
+                        self.answers = parsedQuestions
+                        print("Session answers updated: \(parsedQuestions)")
+                    } else {
+                        print("No changes in answers")
+                    }
+                }
+            },
+            onError: { error in
+                print("Error observing session: \(error)")
+            }
+        )
+    }
+
    
     
     
-    func stopObservingSessionState() {
-        MultiplayerSessionManager.shared.stopObservingSessionState()
+    func stopObservingSession() {
+        participantListener?.remove()
+        participantListener = nil
+        print("Stopped observing for session.")
+//        MultiplayerSessionManager.shared.stopObservingSession()
     }
     
 }
