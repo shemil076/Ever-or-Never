@@ -9,21 +9,21 @@ import SwiftUI
 
 struct MultiplayerQuizView: View {
     @StateObject private var multiplaySessionViewModel = MultiplayerSessionViewModel.shared
-    @State private var currentQuestionIndex: Int = 0
+//    @State private var currentQuestionIndex: Int = 0
     @State private var showAnswer: Bool = false
     var body: some View {
         VStack {
-            if !multiplaySessionViewModel.questions.isEmpty && currentQuestionIndex < multiplaySessionViewModel.questions.count {
-                Text(multiplaySessionViewModel.questions[currentQuestionIndex].question)
+            if !multiplaySessionViewModel.questions.isEmpty && multiplaySessionViewModel.currentQuestionIndex < multiplaySessionViewModel.questions.count {
+                Text(multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question)
                 
                 VStack{
                     Button("YES") {
-                        if currentQuestionIndex < (multiplaySessionViewModel.questions.count ) {
+                        if multiplaySessionViewModel.currentQuestionIndex < (multiplaySessionViewModel.questions.count ) {
                             
                            
                             
                             Task{
-                                await multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[currentQuestionIndex].id, answer: true)
+                                await multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id, answer: true)
                                 
                             }
                             showAnswer = true
@@ -39,11 +39,11 @@ struct MultiplayerQuizView: View {
                     }
                     
                     Button("NO") {
-                        if currentQuestionIndex < (multiplaySessionViewModel.questions.count) {
+                        if multiplaySessionViewModel.currentQuestionIndex < (multiplaySessionViewModel.questions.count) {
                             
                             
                             Task{
-                                await    multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[currentQuestionIndex].id, answer: false)
+                                await    multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id, answer: false)
                             }
                             
 //                            currentQuestionIndex += 1

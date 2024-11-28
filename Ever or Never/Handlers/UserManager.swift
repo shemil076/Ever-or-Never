@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct DBUser: Codable, Identifiable {
+struct DBUser: Codable, Identifiable, Hashable {
     let id: String
     let dateCreated: Date?
     let email: String?

@@ -27,7 +27,9 @@ class MultiplayerSessionViewModel: ObservableObject {
     @Published var isGameStarted : Bool = false
     @Published var isGameEnded : Bool = false
     @Published var currentQuestionIndex: Int = 0
+    @Published var previousQuestionIndex: Int = -1
     @Published private(set) var user: DBUser? = nil
+    @Published var score : [String: Int] = [:]
     
     private var participantListener: ListenerRegistration?
     
@@ -77,7 +79,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         self.questions = session.questions
         
         try await updatedParticipants(for: session)
-
+        
     }
     
     func updatedParticipants(for session : MultiplayerQuizSession) async throws {
@@ -100,7 +102,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         
         MultiplayerSessionManager.shared.observeParticipants(
             
-           
+            
             sessionId: sessionId,
             onUpdate: { [weak self] participantIds in
                 guard let self = self else { return }
@@ -122,14 +124,14 @@ class MultiplayerSessionViewModel: ObservableObject {
             }
         )
     }
-
+    
     private func fetchUsers(for userIds: [String]) async throws -> [DBUser] {
         var fetchedUsers: [DBUser] = []
         
         for userId in userIds {
             do {
                 let user = try await UserManager.shared.getUser(id: userId)
-//                print(user)
+                //                print(user)
                 fetchedUsers.append(user)
             } catch {
                 print("Error fetching user \(userId): \(error.localizedDescription)")
@@ -138,8 +140,8 @@ class MultiplayerSessionViewModel: ObservableObject {
         
         return fetchedUsers
     }
-
-
+    
+    
     
     
     func stopObservingParticipants() {
@@ -156,7 +158,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         }
         let updatedSessionData = try? await MultiplayerSessionManager.shared.submitAnswer(sessionId: currentSessionId, questionId: questionId, question: question , answer: answer, userId: user.id)
         
-
+        
         DispatchQueue.main.async {
             self.answers = updatedSessionData!.questionsAndAnswers
         }
@@ -168,13 +170,13 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
         print("Starting the game")
-
+        
         DispatchQueue.main.async {
             let gameStarted = MultiplayerSessionManager.shared.startQuiz(for: currentSessionId)
-                self.isGameStarted = gameStarted
-                print("gameStarted: \(gameStarted)")
-//            print("isGameStarted: \(self.isGameStarted)")
-            }
+            self.isGameStarted = gameStarted
+            print("gameStarted: \(gameStarted)")
+            //            print("isGameStarted: \(self.isGameStarted)")
+        }
     }
     
     
@@ -192,7 +194,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             print("No session ID available")
             return
         }
-
+        
         MultiplayerSessionManager.shared.observeSession(
             for: currentSessionId,
             lookingFor: .forStates,
@@ -201,7 +203,7 @@ class MultiplayerSessionViewModel: ObservableObject {
                     if let (isGameStarted, isGameEnded) = update as? (Bool, Bool){
                         self?.isGameStarted = isGameStarted
                         self?.isGameEnded = isGameEnded
-//                        print("Session state: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
+                        //                        print("Session state: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
                     }
                 }
             },
@@ -210,48 +212,6 @@ class MultiplayerSessionViewModel: ObservableObject {
             }
         )
     }
-    
-    
-//    func observeSessionAnswers(){
-//        DispatchQueue.main.async {
-//            self.answers = [] // Reset participants list on the main thread
-//        }
-//        guard let currentSessionId else {
-//            print("No session ID available")
-//            return
-//        }
-//        
-//        MultiplayerSessionManager.shared.observeSession(
-//            for: currentSessionId,
-//            lookingFor: .forAnswer,
-//            onUpdate: { [weak self] updatedAnswers in
-//                guard let self = self else { return }
-//                
-//                guard let answesr = updatedAnswers as? [MultiplayerQuestionAnswer] else{
-//                    return
-//                }
-//                
-//                
-//                
-//                if !answesr.isEmpty{
-//                    DispatchQueue.main.async {
-//                        print("Updated answers: \(updatedAnswers)")
-//                        self.answers = answesr
-//                        
-//                        print("Session answers: \(updatedAnswers)")
-//                    }
-//                } else {
-//                    print("Answers are empty   \(updatedAnswers)")
-//                }
-//            
-//                
-//            },
-//            onError: { error in
-//                print("Error observing session: \(error)")
-//                
-//            }
-//        )
-//    }
     
     
     func observeSessionAnswers() {
@@ -306,15 +266,83 @@ class MultiplayerSessionViewModel: ObservableObject {
             }
         )
     }
-
-   
     
+    
+    func observeSessionForIndexesUpdate(){
+        guard let currentSessionId else {
+            print("No session ID available")
+            return
+        }
+
+        MultiplayerSessionManager.shared.observeSession(
+            for: currentSessionId,
+            lookingFor: LookingFor.forCurrentIndex,
+            onUpdate: { [weak self] updatedIndexes in
+                guard let self = self else { return }
+                print("listening ")
+                
+                DispatchQueue.main.async {
+                    if let (currentQuestionIndex, previousQuestionIndex) = updatedIndexes as? (Int, Int){
+                        
+                        print("currentQuestionIndex: \(currentQuestionIndex), previousQuestionIndex: \(previousQuestionIndex)")
+                        self.currentQuestionIndex = currentQuestionIndex
+                        self.previousQuestionIndex = previousQuestionIndex
+                    }
+                }
+            },
+            onError: { error in
+                print("Error observing session: \(error)")
+                
+            }
+        )
+        
+    }
+    
+    func updateQuestionIndexes() async{
+        guard let currentSessionId else {
+            print("No session ID available")
+            return
+        }
+        
+        try? await MultiplayerSessionManager.shared.updateQuestionIndexes(for: currentSessionId)
+    }
     
     func stopObservingSession() {
         participantListener?.remove()
         participantListener = nil
         print("Stopped observing for session.")
-//        MultiplayerSessionManager.shared.stopObservingSession()
+        //        MultiplayerSessionManager.shared.stopObservingSession()
+    }
+    
+    func updatePreviousQuestionIndexes(){
+        print("prev question index: \(self.previousQuestionIndex)")
+        if self.previousQuestionIndex < self.questions.count{
+            self.previousQuestionIndex += 1
+        }
+    }
+    
+    func calculateScores()  {
+        // Dictionary to store the scores for each player
+        print("Calculating scores...")
+        var playerScores: [String: Int] = [:]
+
+        for questionAnswer in self.answers {
+            // Iterate through each answer in the current question
+            for answer in questionAnswer.answers {
+                // Extract the player ID and the answer value
+                let playerId = answer.playerId
+                let isAnswerYes = answer.answer
+                
+                // Calculate score: Yes = 10, No = 0
+                let score = isAnswerYes ? 10 : 0
+                
+                // Update the player's score
+                playerScores[playerId, default: 0] += score
+            }
+        }
+
+        print("Scores: \(playerScores)")
+        self.score =  playerScores
     }
     
 }

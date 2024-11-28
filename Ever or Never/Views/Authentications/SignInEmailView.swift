@@ -29,48 +29,82 @@ struct SignInEmailView: View {
     @Binding var showSignInView : Bool
     @State private var showAlert: Bool = false
     var body: some View {
-        VStack{
-            TextField("Email...", text: $viewModel.email)
-                .padding()
-                .background(Color.gray.opacity(0.4))
-                .cornerRadius(10)
+        ZStack{
             
-            SecureField("Password...", text: $viewModel.password)
-                .padding()
-                .background(Color.gray.opacity(0.4))
-                .cornerRadius(10)
+            ViewBackground()
             
-            Button {
-                Task {
+            
+            VStack{
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Email")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                     
-                    do {
-                        try await viewModel.signIn()
-                        showSignInView = false
-                        return
-                    }catch {
-                        print(error)
-                        print("Please register first")
-                        showAlert = true
-                    }
+                    TextField("Enter the display name", text: $viewModel.email)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                        .font(.body)
                 }
-            } label: {
-                Text("Sign in")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(height: 55)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(10)
+
+//                TextField("Email...", text: $viewModel.email)
+//                    .padding()
+//                    .background(Color.gray.opacity(0.4))
+//                    .cornerRadius(10)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Password")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    
+                    SecureField("Password", text: $viewModel.password)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray, lineWidth: 1)
+                        )
+                        .font(.body)
+                }
+//
+//                SecureField("Password...", text: $viewModel.password)
+//                    .padding()
+//                    .background(Color.gray.opacity(0.4))
+//                    .cornerRadius(10)
+                
+                Button {
+                    Task {
+                        
+                        do {
+                            try await viewModel.signIn()
+                            showSignInView = false
+                            return
+                        }catch {
+                            print(error)
+                            print("Please register first")
+                            showAlert = true
+                        }
+                    }
+                } label: {
+                    Text("Sign in")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(height: 55)
+                        .frame(maxWidth: .infinity)
+                        .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                        .cornerRadius(10)
+                }
             }
-            Spacer()
-        }
-        .alert("Please register first", isPresented: $showAlert){
-            Button("OK"){
-                showAlert = false
+            .alert("Please register first", isPresented: $showAlert){
+                Button("OK"){
+                    showAlert = false
+                }
             }
+            .padding()
         }
-        .padding()
-        .navigationTitle("Sign in with Email")
+        .ignoresSafeArea()
     }
 }
 
