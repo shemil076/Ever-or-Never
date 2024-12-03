@@ -12,6 +12,7 @@ struct MultiplayerOptionView: View {
    
     @State private var sessionIdInput : String = ""
     @State private var isGameSessionReady = false
+    @State private var isSessionIdEmpty = false
     var body: some View {
         ZStack{
             
@@ -37,10 +38,15 @@ struct MultiplayerOptionView: View {
                 }
                 
                 Button {
-                    Task{
-                        try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
-                        isGameSessionReady = true
+                    if sessionIdInput == ""{
+                        isSessionIdEmpty = true
+                    }else{
+                        Task{
+                            try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
+                            isGameSessionReady = true
+                        }
                     }
+                    
                 } label: {
                     Text("JOIN THE GAME")
                         .font(.headline)
@@ -155,6 +161,11 @@ struct MultiplayerOptionView: View {
                 }
             }
             .padding()
+        }
+        .alert(isPresented: $isSessionIdEmpty){
+            Alert(title: Text("Session Id Empty"),
+                  message: Text("Please enter a session id"),
+                  dismissButton: .default(Text("OK")))
         }
 //        .ignoresSafeArea()
         }

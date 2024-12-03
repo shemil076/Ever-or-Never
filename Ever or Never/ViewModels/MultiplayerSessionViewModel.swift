@@ -30,6 +30,7 @@ class MultiplayerSessionViewModel: ObservableObject {
     @Published var previousQuestionIndex: Int = -1
     @Published private(set) var user: DBUser? = nil
     @Published var score : [String: Int] = [:]
+    @Published var sessionError : SessionStatus? = nil
     
     private var participantListener: ListenerRegistration?
     
@@ -71,7 +72,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         }
         participants.append(user)
         
-        let _: () = MultiplayerSessionManager.shared.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
+        let _: () = try! await MultiplayerSessionManager.shared.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
         
         let session = try await MultiplayerSessionManager.shared.fetchSession(sessionId: sessionId)
         

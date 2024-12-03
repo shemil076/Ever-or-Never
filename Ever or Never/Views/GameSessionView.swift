@@ -159,6 +159,13 @@ struct GameSessionView: View {
                 EmptyView()
             }
         }
+        .alert(isPresented: $singlePlayerViwModel.sessionStatus.isError){
+            Alert(
+                title: Text("Something went wrong"),
+                message: Text(singlePlayerViwModel.sessionStatus.errorDescription ?? "An unhandled error occurred."),
+                dismissButton: .default(Text("OK"))
+            )
+        }
         .navigationBarBackButtonHidden()
     }
     

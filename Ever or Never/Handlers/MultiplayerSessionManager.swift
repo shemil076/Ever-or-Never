@@ -138,17 +138,28 @@ final class MultiplayerSessionManager{
     }
     
     
-    func joinMultiplayerSession(sessionId: String, userId: String){
+    func joinMultiplayerSession(sessionId: String, userId: String) async throws {
         
         let sessionRef = multiplayerSessionCollection.document(sessionId)
         
-        sessionRef.updateData([
-            "participants": FieldValue.arrayUnion([userId])
-        ]){ error in
-            if let error = error {
-                print("Error occured while joining multiplayer session: \(error.localizedDescription)")
-            }
+//        sessionRef.updateData([
+//            "participants": FieldValue.arrayUnion([userId])
+//        ]){ error in
+//            if let error = error {
+//                print("Error occured while joining multiplayer session: \(error.localizedDescription)")
+//            }
+//            print("Player \(userId) successfully joined the multiplayer session \(sessionId).")
+//        }
+        
+        do {
+           try await sessionRef.updateData([
+                "participants": FieldValue.arrayUnion([userId])
+            ])
             print("Player \(userId) successfully joined the multiplayer session \(sessionId).")
+            
+        }catch{
+            print("Error occured while joining multiplayer session: \(error.localizedDescription)")
+            throw error
         }
     }
     

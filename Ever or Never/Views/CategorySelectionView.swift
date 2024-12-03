@@ -14,10 +14,13 @@ struct CategorySelectionView: View {
     @State private var selectedCategories: [QuestionCategory] = []
     @State private var availableCategories: [QuestionCategory] = QuestionCategory.allCases
     @Binding var isMultiplePlayerMode: Bool
+    @State private var isShowAlert : Bool = false
     
     @StateObject var singleGameSessionViewModel = SinglePlayerSessionViewModel()
     
+    @State private var alwaysFalse: Bool = false
     @State private var isGameSessionReady = false
+    @State private var isContinueDisabled: Bool = false
     
     private let adaptiveColumn = [
         GridItem(.adaptive(minimum: 150))
@@ -27,8 +30,8 @@ struct CategorySelectionView: View {
             
             LinearGradient(
                 gradient: Gradient(stops: [
-                    .init(color: Color.white, location: 0.0),   // Blue starts at the top
-                    .init(color: Color.blue.opacity(0.3), location: 1.0) // Purple starts lower (60% of the view height)
+                    .init(color: Color.white, location: 0.0),
+                    .init(color: Color.blue.opacity(0.3), location: 1.0)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
@@ -47,6 +50,10 @@ struct CategorySelectionView: View {
                 }
             }
             
+//            if singleGameSessionViewModel.sessionStatus.isLoading ?? false{
+//                ProgressView()
+//            }
+//            
             VStack(spacing: 10){
                 Text("Category Selection")
                     .font(.title)
@@ -102,21 +109,77 @@ struct CategorySelectionView: View {
                 }
                 
                 Button {
-                    Task {
-                        print("isMultiplePlayerMode: \(isMultiplePlayerMode)")
-                        await initializeGameSession(isMultiplePlayerMode: isMultiplePlayerMode)
-                        isGameSessionReady = true //
+                    
+                    if selectedCategories.isEmpty {
+                        isShowAlert = true
+                    }else{
+                        isContinueDisabled = true
+                        Task {
+                            print("isMultiplePlayerMode: \(isMultiplePlayerMode)")
+                            await initializeGameSession(isMultiplePlayerMode: isMultiplePlayerMode)
+                            isGameSessionReady = true //
+                        }
                     }
+                    
                 } label: {
-                    Text("CONTINUE")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(height: 55)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                        .cornerRadius(10)
-                }
+                    
+                    if singleGameSessionViewModel.sessionStatus.isLoading ?? false{
+                        ProgressView()
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(height: 55)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                            .cornerRadius(10)
+                    } else{
+                        
+                        Text("CONTINUE")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(height: 55)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                            .cornerRadius(10)
+                    }
+                    
+                    
+                }.disabled(isContinueDisabled)
+                
                 .padding(.horizontal, 20)
+//                .alert(isPresented: $isShowAlert) {
+//                    Alert(
+//                        title: Text("Category not selected!"),
+//                        message: Text("Please select at least one category."),
+//                        dismissButton: .default(Text("OK"), action: {
+//                            isShowAlert = false
+//                        })
+//                    )
+//                }
+                .alert(isPresented: Binding(get: {
+                    isShowAlert || (singleGameSessionViewModel.sessionStatus.isError)
+                }, set: { newValue in
+                    if !newValue {
+                        isShowAlert = false
+                        singleGameSessionViewModel.sessionStatus.isError = false
+                    }
+                })) {
+                    if isShowAlert {
+                        return Alert(
+                            title: Text("Category not selected!"),
+                            message: Text("Please select at least one category."),
+                            dismissButton: .default(Text("OK"), action: {
+                                isShowAlert = false
+                            })
+                        )
+                    } else {
+                        return Alert(
+                            title: Text("Something went wrong"),
+                            message: Text(singleGameSessionViewModel.sessionStatus.errorDescription ?? "Error occurred"),
+                            dismissButton: .default(Text("OK"))
+                        )
+                    }
+                }
+
                 //            .disabled(isGameSessionReady == false)
                 
                 
@@ -136,6 +199,17 @@ struct CategorySelectionView: View {
                     }
                 }
             }
+//            .alert(isPresented: $singleGameSessionViewModel.sessionStatus.isError){
+//                Alert(
+//                    title: Text("Something went wrong"),
+//                    message: Text(singleGameSessionViewModel.sessionStatus.errorDescription ?? "Error occurred"),
+//                    dismissButton: .default(Text("OK"))
+//                )
+//            }
+        }
+
+        .onAppear{
+            isContinueDisabled = false
         }
 //                .ignoresSafeArea()
     }
@@ -143,14 +217,10 @@ struct CategorySelectionView: View {
     
     
     func initializeGameSession(isMultiplePlayerMode : Bool) async {
-        
-        print("question count \(selectedQuestionCount)")
         if !isMultiplePlayerMode{
-            print("not multiple player")
-            try? await singleGameSessionViewModel.initializeGameSession(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
+            await singleGameSessionViewModel.initializeGameSession(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
             await singleGameSessionViewModel.loadQuestions(categoriers: selectedCategories, totalQuestionCount: selectedQuestionCount)
         }else{
-            print("multiple player")
             
             try? await MultiplayerSessionViewModel.shared.initializeMultiplayerGameSessions(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
         }

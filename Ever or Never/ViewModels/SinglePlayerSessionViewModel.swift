@@ -16,43 +16,92 @@ class SinglePlayerSessionViewModel: ObservableObject{
     @Published var yesAnswerCount: Int = 0
     @Published var noAnswerCount: Int = 0
     @Published var answers: [QuestionAnswer] = []
+    @Published var sessionStatus : SessionStatus = SessionStatus(isLoading: false, isError: false)
     
     @Published private(set) var user: DBUser? = nil
     
-    func loadCurrentUser() async throws {
-        let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
-        self.user = try await UserManager.shared.getUser(id: authDataResult.uid)
+    private func setSessionError(error: Error) {
+        sessionStatus.isError = true
+        sessionStatus.errorDescription = error.localizedDescription
+        print(error.localizedDescription)
+    }
+    
+    private func setNoSessionError() {
+        sessionStatus.isError = false
+        sessionStatus.errorDescription = nil
+    }
+    
+    func loadCurrentUser() async  {
+        sessionStatus.isLoading = true
         
-        print("User has been loaded")
+        defer{
+            sessionStatus.isLoading = false
+        }
+        
+        
+        do{
+            
+            let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
+            self.user = try await UserManager.shared.getUser(id: authDataResult.uid)
+            
+            setNoSessionError()
+            print("User has been loaded")
+        }catch{
+            setSessionError(error: error)
+        }
+        
     }
     
     
     
     func loadQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async {
-        questions = try! await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+        sessionStatus.isLoading = true
+        
+        defer{
+            sessionStatus.isLoading = false
+        }
+        
+        do{
+            
+            questions = try  await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
+        }
     }
     
-    func initializeGameSession(selectedCategories: [QuestionCategory], totalQuestionCount: Int) async throws{
-        try await loadCurrentUser()
-        self.currentSessionId = try! await SinglePlayerSessionManager.shared.createInitialQuizSession(userId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories)
+    func initializeGameSession(selectedCategories: [QuestionCategory], totalQuestionCount: Int) async {
+        sessionStatus.isLoading = true
+        
+        defer{
+            sessionStatus.isLoading = false
+        }
+        
+        do{
+            await loadCurrentUser()
+            self.currentSessionId = try await SinglePlayerSessionManager.shared.createInitialQuizSession(userId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories)
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
+        }
     }
     
     func submitAnswer(questionId: String, answer: Bool){
         answers.append(QuestionAnswer(question: questionId, answer: answer))
     }
     
-//    func calculateScore(){
-//        let count = answers.reduce((yes: 0, no: 0)) { counts, answer in
-//                if answer.answer {
-//                    return (yes: counts.yes + 1, no: counts.no)
-//                } else {
-//                    return (yes: counts.yes, no: counts.no + 1)
-//                }
-//        }
-//        
-//        yesAnswerCount = count.yes
-//        noAnswerCount = count.no
-//    }
+    //    func calculateScore(){
+    //        let count = answers.reduce((yes: 0, no: 0)) { counts, answer in
+    //                if answer.answer {
+    //                    return (yes: counts.yes + 1, no: counts.no)
+    //                } else {
+    //                    return (yes: counts.yes, no: counts.no + 1)
+    //                }
+    //        }
+    //
+    //        yesAnswerCount = count.yes
+    //        noAnswerCount = count.no
+    //    }
     
     func calculateScore(){
         var score: Int = 0
@@ -62,16 +111,25 @@ class SinglePlayerSessionViewModel: ObservableObject{
             }
         }
         self.yesAnswerCount = score
-//        self.noAnswerCount = answers.count - score
+        //        self.noAnswerCount = answers.count - score
     }
     
     func completeGameSession() async {
+        sessionStatus.isLoading = true
+        
         guard let currentSessionId else {
             print("Error: currentSessionId is nil. Cannot complete the session.")
+            sessionStatus.isError   = true
+            sessionStatus.errorDescription = "Cannot find the session id"
+            sessionStatus.isLoading = false
             return
         }
         
         let currentScore = TypeScore(yesAnswerCount: yesAnswerCount, noAnswerCount: noAnswerCount)
+        
+        defer{
+            sessionStatus.isLoading = false
+        }
         
         do {
             let _ = try await SinglePlayerSessionManager.shared.completeSessionByUpdatingData(
@@ -79,10 +137,12 @@ class SinglePlayerSessionViewModel: ObservableObject{
                 score: currentScore,
                 questionsAnswers: answers
             )
+            setNoSessionError()
         } catch {
+            setSessionError(error: error)
             print("Error completing game session: \(error.localizedDescription)")
         }
     }
-
-
+    
+    
 }
