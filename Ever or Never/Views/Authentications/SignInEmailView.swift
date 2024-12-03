@@ -104,7 +104,7 @@ struct SignInEmailView: View {
             }
             .padding()
         }
-        .ignoresSafeArea()
+//        .ignoresSafeArea()
     }
 }
 

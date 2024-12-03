@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct CategorySelectionView: View {
-//    @EnvironmentObject var multiPlayerSessionViewModel : MultiplayerSessionViewModel
-//    @StateObject private var multiPlayerSessionViewModel = MultiplayerSessionViewModel()
+    //    @EnvironmentObject var multiPlayerSessionViewModel : MultiplayerSessionViewModel
+    //    @StateObject private var multiPlayerSessionViewModel = MultiplayerSessionViewModel()
     @Binding var selectedQuestionCount : Int
     @State private var selectedCategories: [QuestionCategory] = []
     @State private var availableCategories: [QuestionCategory] = QuestionCategory.allCases
@@ -18,6 +18,10 @@ struct CategorySelectionView: View {
     @StateObject var singleGameSessionViewModel = SinglePlayerSessionViewModel()
     
     @State private var isGameSessionReady = false
+    
+    private let adaptiveColumn = [
+        GridItem(.adaptive(minimum: 150))
+    ]
     var body: some View {
         ZStack{
             
@@ -43,22 +47,59 @@ struct CategorySelectionView: View {
                 }
             }
             
-            VStack{
-                Text("Select Categories")
+            VStack(spacing: 10){
+                Text("Category Selection")
                     .font(.title)
                     .padding()
-                
-                List(availableCategories, id: \.self){ category in
-                    MultipleSelectionRow(category: category, isSelected: selectedCategories.contains(category)){
-                        if selectedCategories.contains(category){
-                            selectedCategories.removeAll{$0 == category}
-                        }else{
-                            selectedCategories.append(category)
+                ScrollView{
+                    
+                    
+                    //                List(availableCategories, id: \.self){ category in
+                    //                    MultipleSelectionRow(category: category, isSelected: selectedCategories.contains(category)){
+                    //                        if selectedCategories.contains(category){
+                    //                            selectedCategories.removeAll{$0 == category}
+                    //                        }else{
+                    //                            selectedCategories.append(category)
+                    //                        }
+                    //                    }
+                    //
+                    //                }
+                    
+                    LazyVGrid(columns: adaptiveColumn, spacing: 30){
+                        ForEach(availableCategories, id: \.self){ category in
+                            MultipleSelectionRow(category: category, isSelected: selectedCategories.contains(category)){
+                                if selectedCategories.contains(category){
+                                    selectedCategories.removeAll{$0 == category}
+                                }else{
+                                    selectedCategories.append(category)
+                                }
+                            }
+                            
                         }
-                    }
+                    }.padding(.horizontal, UIScreen.main.bounds.width / 15 )
+                        .padding(.vertical,30)
+                    
+                    
+                    //                LazyVGrid(columns : adaptiveColumn, spacing:20 ){
+                    //                    ForEach(multiplaySessionViewModel.participants, id: \.self){participant in
+                    //                        VStack(alignment: .leading) {
+                    //                            Text(participant.displayName)
+                    //                                .font(.headline)
+                    //                        }.background(
+                    //                            Rectangle()
+                    //                                .fill(Color(red: 185/255, green: 203/255, blue: 236/246))
+                    //                                .frame(width: UIScreen.main.bounds .width * 0.4 , height: UIScreen.main.bounds.height * 0.07)
+                    //                                .cornerRadius(15)
+                    //                        )
+                    //                        .padding()
+                    //
+                    //
+                    //                    }
+                    //                }
+                    
+                    
                     
                 }
-                
                 
                 Button {
                     Task {
@@ -67,8 +108,15 @@ struct CategorySelectionView: View {
                         isGameSessionReady = true //
                     }
                 } label: {
-                    Text("Start Quiz")
+                    Text("CONTINUE")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(height: 55)
+                        .frame(maxWidth: .infinity)
+                        .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                        .cornerRadius(10)
                 }
+                .padding(.horizontal, 20)
                 //            .disabled(isGameSessionReady == false)
                 
                 
@@ -87,10 +135,9 @@ struct CategorySelectionView: View {
                         EmptyView()
                     }
                 }
-                
             }
         }
-//        .ignoresSafeArea()
+//                .ignoresSafeArea()
     }
     
     
@@ -121,15 +168,36 @@ struct MultipleSelectionRow : View {
     var action:() -> Void
     
     var body: some View {
-        Button(action : action){
-            HStack{
+        //        Button(action : action){
+        //            ZStack{
+        //                Text(category.rawValue)
+        //                    .foregroundColor(isSelected ? .white : .black)
+        //            }
+        //            .background(
+        //                Rectangle()
+        //                    .fill(isSelected ?Color(red: 103/255, green: 134/255, blue: 236/255) : Color(red: 185/255, green: 203/255, blue: 236/246))
+        //                    .frame(width: UIScreen.main.bounds.width * 0.4 ,height:   UIScreen.main.bounds.height / 15)
+        //                    .cornerRadius(15)
+        //            )
+        //        }.padding(.horizontal, 40)
+        //            .padding(.vertical, 10)
+        
+        Button {
+            action()
+        } label: {
+//            ZStack{
                 Text(category.rawValue)
-                Spacer()
-                if isSelected{
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.blue)
-                }
-            }
-        }
+                    .foregroundColor(isSelected ? .white : .black)
+                    .background(
+                        Rectangle()
+                            .fill(isSelected ?Color(red: 103/255, green: 134/255, blue: 236/255) : Color(red: 185/255, green: 203/255, blue: 236/246))
+                            .frame(width: UIScreen.main.bounds.width * 0.4 ,height:   UIScreen.main.bounds.height / 15)
+                            .cornerRadius(15)
+                    )
+//            }
+            
+        }.padding(.horizontal, 40)
+            .padding(.vertical, 10)
+        
     }
 }

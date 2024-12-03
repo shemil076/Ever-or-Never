@@ -124,7 +124,7 @@ struct GameModeSelectionView: View {
                 
             }
         
-        .ignoresSafeArea()
+//        .ignoresSafeArea()
         
         
     }

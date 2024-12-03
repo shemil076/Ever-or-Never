@@ -173,21 +173,44 @@ final class SinglePlayerSessionManager{
            }
     }
     
-//    func updateUserPremiumStatus(userId: String, isPremium: Bool) async throws{
-//        
-//        let data: [String : Any] = [
-//            DBUser.CodingKeys.isPremium.rawValue : isPremium
-//        ]
-//        try await userDocument(userId: userId).updateData(data)
-//    }
+
+    func fetchSessionData(sessionId: String) async throws -> SinglePlayerQuizSession?{
+        let documentRef = try await singlePlayerSessionCollection.document(sessionId).getDocument()
+        
+        guard let documentData = documentRef.data() else {
+            print("No data related to session Id \(sessionId) was found")
+            throw NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Session not found."])
+        }
+        
+        do {
+            let session = try Firestore.Decoder().decode(SinglePlayerQuizSession.self, from: documentData)
+            return session
+        }catch{
+            print("Decoding error: \(error)")
+            throw NSError(domain: "MultiplayerSession", code: -2, userInfo: [NSLocalizedDescriptionKey: "Decoding error: \(error.localizedDescription)"])
+        }
+    }
     
 }
 
 
-//let userId: String
-//let dateCreated: Date?
-//let email: String?
-//let photoURL: String?
-//let isPremium: Bool
-//let displayName: String
-//let dob : Date
+//func fetchSession(sessionId: String) async throws -> MultiplayerQuizSession {
+//    let document = try await multiplayerSessionCollection.document(sessionId).getDocument()
+
+//    
+//    guard let data = document.data() else {
+//        print("No data related to session Id \(sessionId) was found")
+//        throw NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Session not found."])
+//    }
+
+//    
+//    do {
+//        // Attempt to decode the session data
+//        let session = try Firestore.Decoder().decode(MultiplayerQuizSession.self, from: data)
+//        return session
+//    } catch {
+//        // Catch and print the decoding error
+//        print("Decoding error: \(error)")
+//        throw NSError(domain: "MultiplayerSession", code: -2, userInfo: [NSLocalizedDescriptionKey: "Decoding error: \(error.localizedDescription)"])
+//    }
+//}

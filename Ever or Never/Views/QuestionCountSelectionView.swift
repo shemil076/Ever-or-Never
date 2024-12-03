@@ -71,7 +71,8 @@ struct QuestionCountSelectionView: View {
                 Spacer()
             }
             
-        }.ignoresSafeArea()
+        }
+//        .ignoresSafeArea()
         }
 }
 
@@ -93,7 +94,7 @@ enum QuestionCount: CaseIterable {
     
     var rawValue: Int {
         switch self {
-        case .ten: return 10
+        case .ten: return 5
         case .fifty: return 50
         case .hundred: return 100
 //        case .infinity: return Int.max

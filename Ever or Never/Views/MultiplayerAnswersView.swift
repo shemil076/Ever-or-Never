@@ -14,7 +14,7 @@ struct MultiplayerAnswersView: View {
     var body: some View {
         ZStack{
             ViewBackground()
-            VStack{
+            VStack(alignment: .leading, spacing: 20){
                 Text ("Submited Answers")
                     .font(.largeTitle)
                 
@@ -23,12 +23,13 @@ struct MultiplayerAnswersView: View {
                         ProgressView()
                     }else{
                         if multiplaySessionViewModel.questions.indices.contains(multiplaySessionViewModel.currentQuestionIndex){
-                            Text ("\(multiplaySessionViewModel.currentQuestionIndex + 1) of \(multiplaySessionViewModel.questions.count) questions")
-                                .font(.caption)
+                            Text ("\(multiplaySessionViewModel.currentQuestionIndex + 1) of \(multiplaySessionViewModel.questions.count) Questions")
+                                .font(.subheadline)
                                 .foregroundColor(.gray)
                             
-                            Text ("\(multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question)")
-                            VStack(alignment: .center) {
+                            Text ("\(multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question)?")
+                                .font(.title3)
+                            VStack {
                                 let currentQuestionIndex = multiplaySessionViewModel.questions.firstIndex(where: {$0.id == multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id})
                                 
                                 if multiplaySessionViewModel.answers.indices.contains(multiplaySessionViewModel.currentQuestionIndex) {
@@ -36,22 +37,28 @@ struct MultiplayerAnswersView: View {
                                     
                                     ForEach(currentAnswers) { answer in
                                         HStack(spacing: UIScreen.main.bounds.width * 0.4) {
-                                    
                                             let playerIndex = multiplaySessionViewModel.participants.firstIndex(where: { $0.id == answer.playerId })
-                                            Text(multiplaySessionViewModel.participants[playerIndex!].displayName)
-                                                .background(
+                                            ZStack{
+                                                Text(multiplaySessionViewModel.participants[playerIndex!].displayName)
+                                                    
+                                                    
+                                            }.background(
                                                     Rectangle()
                                                         .fill(.white)
-                                                        .frame(width: UIScreen.main.bounds .width * 0.6 , height: UIScreen.main.bounds.height * 0.07)
+                                                        .frame(width: UIScreen.main.bounds .width / 2 , height: 50)
                                                         .cornerRadius(15)
+                                                        .padding(.leading, UIScreen.main.bounds .width * 0.15)
                                                     
-                                                )
-                                            Text(answer.answer ? "Yes" : "No")
-                                                .foregroundColor(.white)
-                                                .background(
+                                            )
+                                            .padding(.leading, 20)
+                                            
+                                            ZStack{
+                                                Text(answer.answer ? "Yes" : "No")
+                                                    .foregroundColor(.white)
+                                            }.background(
                                                     Rectangle()
                                                         .fill(answer.answer ? Color(red: 78/255, green: 130/255, blue: 209/255) : .black)
-                                                        .frame(width: UIScreen.main.bounds .width * 0.2 , height: UIScreen.main.bounds.height * 0.07)
+                                                        .frame(width: UIScreen.main.bounds .width / 4 , height: 50)
                                                         .cornerRadius(15)
                                                 )
                                         }
@@ -89,7 +96,14 @@ struct MultiplayerAnswersView: View {
                         }
                     } label: {
                         Text("Continue")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(height: 55)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                            .cornerRadius(10)
                     }
+                    .padding()
                 }
                 
                 NavigationLink(
@@ -101,7 +115,7 @@ struct MultiplayerAnswersView: View {
                 
                 
                 
-            }.ignoresSafeArea()
+            }.padding()
             .onAppear{
                 navigateToQuiz = false
                 multiplaySessionViewModel.observeSessionAnswers()
@@ -126,7 +140,8 @@ struct MultiplayerAnswersView: View {
                     label: { EmptyView() }
                 )
             )
-        }
+        }.navigationBarBackButtonHidden()
+//        .ignoresSafeArea()
     }
 }
 

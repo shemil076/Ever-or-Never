@@ -155,7 +155,8 @@ struct MultiplayerOptionView: View {
                 }
             }
             .padding()
-        }.ignoresSafeArea()
+        }
+//        .ignoresSafeArea()
         }
 }
 

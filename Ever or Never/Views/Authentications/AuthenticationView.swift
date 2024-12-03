@@ -87,7 +87,8 @@ struct AuthenticationView: View {
                 }
                 .padding(.bottom, UIScreen.main.bounds.height / 7)
             }
-        }.ignoresSafeArea()
+        }
+//        .ignoresSafeArea()
     }
 }
 

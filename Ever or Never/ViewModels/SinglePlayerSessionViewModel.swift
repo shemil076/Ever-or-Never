@@ -41,21 +41,48 @@ class SinglePlayerSessionViewModel: ObservableObject{
         answers.append(QuestionAnswer(question: questionId, answer: answer))
     }
     
+//    func calculateScore(){
+//        let count = answers.reduce((yes: 0, no: 0)) { counts, answer in
+//                if answer.answer {
+//                    return (yes: counts.yes + 1, no: counts.no)
+//                } else {
+//                    return (yes: counts.yes, no: counts.no + 1)
+//                }
+//        }
+//        
+//        yesAnswerCount = count.yes
+//        noAnswerCount = count.no
+//    }
+    
     func calculateScore(){
-        let count = answers.reduce((yes: 0, no: 0)) { counts, answer in
-                if answer.answer {
-                    return (yes: counts.yes + 1, no: counts.no)
-                } else {
-                    return (yes: counts.yes, no: counts.no + 1)
-                }
+        var score: Int = 0
+        for answer in answers {
+            if answer.answer {
+                score += 10
+            }
         }
-        
-        yesAnswerCount = count.yes
-        noAnswerCount = count.no
+        self.yesAnswerCount = score
+//        self.noAnswerCount = answers.count - score
     }
     
-    func completeGameSession() async{
+    func completeGameSession() async {
+        guard let currentSessionId else {
+            print("Error: currentSessionId is nil. Cannot complete the session.")
+            return
+        }
+        
         let currentScore = TypeScore(yesAnswerCount: yesAnswerCount, noAnswerCount: noAnswerCount)
-        let _ = try! await SinglePlayerSessionManager.shared.completeSessionByUpdatingData(sessionId: currentSessionId!, score: currentScore, questionsAnswers: answers)
+        
+        do {
+            let _ = try await SinglePlayerSessionManager.shared.completeSessionByUpdatingData(
+                sessionId: currentSessionId,
+                score: currentScore,
+                questionsAnswers: answers
+            )
+        } catch {
+            print("Error completing game session: \(error.localizedDescription)")
+        }
     }
+
+
 }

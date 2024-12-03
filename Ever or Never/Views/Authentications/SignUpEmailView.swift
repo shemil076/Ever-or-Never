@@ -159,7 +159,7 @@ struct SignUpEmailView: View {
             }
             .padding()
         }
-        .ignoresSafeArea()
+//        .ignoresSafeArea()
     }
 }
 
