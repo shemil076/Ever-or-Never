@@ -133,12 +133,22 @@ final class MultiplayerSessionManager{
             return (sessionId, hostId)
         }catch{
             print("Error creating initial quiz session: \(error.localizedDescription)")
-            return (sessionId, hostId)
+            throw error
+//            return (sessionId, hostId)
         }
     }
     
     
     func joinMultiplayerSession(sessionId: String, userId: String) async throws {
+        
+        let fetchedSession = try await fetchSession(sessionId: sessionId)
+        
+        
+        if fetchedSession.isGameStarted || fetchedSession.isGameEnded{
+            print("Session \(sessionId) has already started")
+            throw NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Session  has already started"])
+        }
+        
         
         let sessionRef = multiplayerSessionCollection.document(sessionId)
         
@@ -269,28 +279,24 @@ final class MultiplayerSessionManager{
         
         let questionData = sessionData["questions"] as? [[String : Any]] ?? []
         
-        let questions = questionData.compactMap{ data -> Question? in
+        let questions = try questionData.compactMap{ data -> Question? in
             do {
                 let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
                 return try JSONDecoder().decode(Question.self, from: jsonData)
             }
             catch {
                 print("Failed to decode question: \(error)")
-                        return nil
+                throw error
             }
             
         }
         var currentQuestionIndex = sessionData["currentQuestionIndex"] as? Int ?? 0
         let previousQuestionIndex = currentQuestionIndex
-        
-        print("Questions: \(questions)")
-        print("Questions count: \(questions.count)")
+            
         
         if currentQuestionIndex < questions.count {
             currentQuestionIndex = currentQuestionIndex + 1
         }
-        print("currentQuestionIndex: \(currentQuestionIndex)")
-        print("previousQuestionIndex: \(previousQuestionIndex)")
         
         try await sessionRef.updateData([
             "currentQuestionIndex" : currentQuestionIndex,
@@ -360,19 +366,29 @@ final class MultiplayerSessionManager{
     //        dbListener?.remove()
     //    }
     
-    func startQuiz(for sessionId: String) -> Bool{
+    func startQuiz(for sessionId: String) async throws -> Bool{
         print("Starting game for session: \(sessionId)")
-        var isGameStarted : Bool = false
-        multiplayerSessionCollection.document(sessionId).updateData(["isGameStarted": true]) { error in
-            if let error = error {
-                print("Error starting game: \(error.localizedDescription)")
-            }else {
-                print("Game started successfully")
-                isGameStarted = true
-                print("Session: \(sessionId) is now active")
-            }
+//        var isGameStarted : Bool = false
+//        multiplayerSessionCollection.document(sessionId).updateData(["isGameStarted": true]) { error in
+//            if let error = error {
+//                print("Error starting game: \(error.localizedDescription)")
+//            }else {
+//                print("Game started successfully")
+//                isGameStarted = true
+//                print("Session: \(sessionId) is now active")
+//            }
+//        }
+        
+        do {
+            try await multiplayerSessionCollection.document(sessionId).updateData(["isGameStarted": true])
+            print("Game started successfully")
+            return true
+        } catch {
+            print("Error starting game: \(error.localizedDescription)")
+            throw error
         }
-        return isGameStarted
+        
+//        return isGameStarted
     }
     
     func endQuiz(for sessionId: String) -> Bool{

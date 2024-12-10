@@ -18,6 +18,7 @@ class SinglePlayerSessionViewModel: ObservableObject{
     @Published var answers: [QuestionAnswer] = []
     @Published var sessionStatus : SessionStatus = SessionStatus(isLoading: false, isError: false)
     
+    
     @Published private(set) var user: DBUser? = nil
     
     private func setSessionError(error: Error) {
@@ -55,15 +56,29 @@ class SinglePlayerSessionViewModel: ObservableObject{
     
     
     func loadQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async {
+        guard let userId = self.user?.id, let userSeenQuestions = self.user?.seenQuestions else {
+            print("No user id available")
+            return
+        }
+        
         sessionStatus.isLoading = true
         
         defer{
             sessionStatus.isLoading = false
         }
-        
+    
         do{
+//            fetchRandomUniqueQuestions
             
-            questions = try  await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            questions = try  await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: userSeenQuestions, categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+//            questions = try  await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            
+            try await UserHelperFunctions.updateSeenQuestions(userId: userId, userSeenQuestions: userSeenQuestions, questions: questions)
+//            let extractedQuestionIds = questions.reduce(into: [String]()){ result, item in
+//                result.append(item.id)
+//            }
+//            
+//            let _ = try await UserManager.shared.saveSeenQuestions(id: userId, seenQuestions: userSeenQuestions, newQuestions:Set(extractedQuestionIds))
             setNoSessionError()
         }catch{
             setSessionError(error: error)
@@ -137,6 +152,7 @@ class SinglePlayerSessionViewModel: ObservableObject{
                 score: currentScore,
                 questionsAnswers: answers
             )
+            
             setNoSessionError()
         } catch {
             setSessionError(error: error)

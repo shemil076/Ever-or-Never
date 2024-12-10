@@ -16,6 +16,7 @@ struct DBUser: Codable, Identifiable, Hashable {
     let isPremium: Bool
     let displayName: String
     let dob : Date
+    var seenQuestions: Set<String>?
     
     
     init(auth: AuthDataResultModel){
@@ -26,6 +27,7 @@ struct DBUser: Codable, Identifiable, Hashable {
         self.isPremium = false
         self.displayName = ""
         self.dob = Date()
+        self.seenQuestions =  Set<String>()
     }
     
     init(auth: AuthDataResultModel, displayName: String, dob: Date){
@@ -36,6 +38,7 @@ struct DBUser: Codable, Identifiable, Hashable {
         self.isPremium = false
         self.displayName = displayName
         self.dob = dob
+        self.seenQuestions =  Set<String>()
     }
     
     init(id: String, dateCreated: Date?, email: String?, photoURL: String?, isPremium: Bool, displayName: String, dob: Date){
@@ -46,6 +49,7 @@ struct DBUser: Codable, Identifiable, Hashable {
         self.isPremium = isPremium
         self.displayName = displayName
         self.dob = dob
+        self.seenQuestions =  Set<String>()
     }
     
     func togglePremuim() -> DBUser{
@@ -61,6 +65,7 @@ struct DBUser: Codable, Identifiable, Hashable {
         case isPremium = "isPremium"
         case displayName = "displayName"
         case dob = "dob"
+        case seenQuestions = "seenQuestions"
     }
     
     init(from decoder: any Decoder) throws {
@@ -72,6 +77,9 @@ struct DBUser: Codable, Identifiable, Hashable {
         self.isPremium = try container.decode(Bool.self, forKey: .isPremium)
         self.displayName = try container.decode(String.self, forKey: .displayName)
         self.dob = try container.decode(Date.self, forKey: .dob)
+        
+        let seenQuestionsArray = try container.decodeIfPresent([String].self, forKey: .seenQuestions)
+            self.seenQuestions = seenQuestionsArray != nil ? Set(seenQuestionsArray!) : nil
     }
     
  
@@ -85,6 +93,11 @@ struct DBUser: Codable, Identifiable, Hashable {
         try container.encode(self.isPremium, forKey: .isPremium)
         try container.encode(self.displayName, forKey: .displayName)
         try container.encode(self.dob, forKey: .dob)
+        try container.encodeIfPresent(self.seenQuestions, forKey: .seenQuestions)
+        
+        if let seenQuestions = self.seenQuestions {
+               try container.encode(Array(seenQuestions), forKey: .seenQuestions)
+           }
     }
     
     
@@ -124,5 +137,33 @@ final class UserManager {
             DBUser.CodingKeys.isPremium.rawValue : isPremium
         ]
         try await userDocument(id: id).updateData(data)
+    }
+    
+    func saveSeenQuestions(id: String ,seenQuestions: Set<String> , newQuestions: Set<String>) async throws{
+        
+        
+        var seenQuestions = seenQuestions
+        
+        for newQuestion in newQuestions {
+            if !seenQuestions.contains(newQuestion){
+                seenQuestions.insert(newQuestion)
+            }
+        }
+        
+        let seenQuestionsArray = Array(seenQuestions)
+        
+//        let newSeenQuestionsArray =  Array(newQuestions)
+        
+//        for newQuestion in newSeenQuestionsArray{
+//            seenQuestionsArray.append(newQuestion)
+//        }
+        
+        
+        let data: [String: Any] = [
+            "seenQuestions": seenQuestionsArray
+        ]
+        
+        try await userDocument(id: id).updateData(data)
+            
     }
 }

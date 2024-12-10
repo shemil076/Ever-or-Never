@@ -7,8 +7,9 @@
 
 import Foundation
 import FirebaseFirestore
+import SwiftUICore
 
-
+@MainActor
 class MultiplayerSessionViewModel: ObservableObject {
     
     static let shared = MultiplayerSessionViewModel()
@@ -16,6 +17,8 @@ class MultiplayerSessionViewModel: ObservableObject {
     private init() {
         
     }
+    
+    @StateObject var gameSessionManager =  GameSessionManager.shared
     
     @Published var currentSessionId : String? = nil
     @Published var questions: [Question] = []
@@ -30,72 +33,166 @@ class MultiplayerSessionViewModel: ObservableObject {
     @Published var previousQuestionIndex: Int = -1
     @Published private(set) var user: DBUser? = nil
     @Published var score : [String: Int] = [:]
-    @Published var sessionError : SessionStatus? = nil
+    @Published var sessionStatus : SessionStatus = SessionStatus(isLoading: false, isError: false)
     
     private var participantListener: ListenerRegistration?
     
-    func loadCurrentUser() async throws {
-        print("fetching current user")
-        let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
-        print("auth data fetched", authDataResult)
-        self.user = try await UserManager.shared.getUser(id: authDataResult.uid)
+    private func setSessionError(error: Error) {
+        self.sessionStatus.isError = true
+        self.sessionStatus.errorDescription = error.localizedDescription
+        print("Cannot join the session")
+        print(error.localizedDescription)
+    }
+    
+    private func setNoSessionError() {
+        self.sessionStatus.isError = false
+        self.sessionStatus.errorDescription = nil
+    }
+    
+    func loadCurrentUser() async {
+        //        self.sessionStatus.isLoading = true
+        //
+        //        defer{
+        //            self.sessionStatus.isLoading = false
+        //        }
+        do{
+            print("fetching current user")
+            let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
+            print("auth data fetched", authDataResult)
+            self.user = try await UserManager.shared.getUser(id: authDataResult.uid)
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
+        }
     }
     
     
     
     func loadQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async {
-        questions = try! await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
-        print("Questions were loaded")
+        guard let userId = self.user?.id, let userSeenQuestions = self.user?.seenQuestions else {
+            print("No session ID available")
+            return
+        }
+        
+        
+        //        self.sessionStatus.isLoading = true
+        //
+        //        defer{
+        //            self.sessionStatus.isLoading = false
+        //        }
+        do{
+            //            questions = try await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            
+            questions = try await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: userSeenQuestions, categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            
+            
+            try await UserHelperFunctions.updateSeenQuestions(userId: userId, userSeenQuestions: userSeenQuestions, questions: questions)
+            
+            print("Questions were loaded")
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
+        }
     }
     
-    func initializeMultiplayerGameSessions(selectedCategories: [QuestionCategory], totalQuestionCount: Int) async throws{
+    func initializeMultiplayerGameSessions(selectedCategories: [QuestionCategory], totalQuestionCount: Int) async {
+        self.sessionStatus.isLoading = true
+        
         print("running this")
         try await loadCurrentUser()
         await loadQuestions(categoriers:selectedCategories, totalQuestionCount: totalQuestionCount)
         print(questions.count)
-        if (!questions.isEmpty && (user != nil)){
-            print(questions.count)
-            
-            let (sessionId, hostId) =  try! await MultiplayerSessionManager.shared.createMultiplayerSession(hostId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories, qustions: self.questions )
-            self.currentSessionId = sessionId
-            self.hostId = hostId
-            print("session created")
+        
+        defer{
+            self.sessionStatus.isLoading = false
         }
-        participants.append(user!)
-        print(currentSessionId)
+        
+        do {
+            if (!questions.isEmpty && (user != nil)){
+                print(questions.count)
+                
+                let (sessionId, hostId) =  try await MultiplayerSessionManager.shared.createMultiplayerSession(hostId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories, qustions: self.questions )
+                self.currentSessionId = sessionId
+                self.hostId = hostId
+                print("session created")
+                
+                
+//                gameSessionManager.sessionID = sessionId
+//                gameSessionManager.isMultiplayerGame = true
+//                gameSessionManager.playerID = user!.id
+//
+//                initializeGameSessionManager(sessionId: sessionId!, playerId: user!.id)
+                gameSessionManager.sessionID = sessionId
+                gameSessionManager.playerID = user!.id
+                gameSessionManager.isMultiplayerGame = true
+                
+            }
+            participants.append(user!)
+            print(currentSessionId)
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
+        }
     }
     
-    func joingGameSession(sessionId: String) async throws{
-        guard let user else {
+    func joingGameSession(sessionId: String) async {
+        
+        self.sessionStatus.isLoading = true
+        
+        guard let user , let userSeenQuestions = self.user?.seenQuestions else {
             print("No user logged in")
             return
         }
         participants.append(user)
         
-        let _: () = try! await MultiplayerSessionManager.shared.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
-        
-        let session = try await MultiplayerSessionManager.shared.fetchSession(sessionId: sessionId)
-        
-        self.currentSessionId = sessionId
-        self.questions = session.questions
-        
-        try await updatedParticipants(for: session)
+        defer {
+            self.sessionStatus.isLoading = false
+        }
+        do{
+            let _: () = try await MultiplayerSessionManager.shared.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
+            
+            let session = try await MultiplayerSessionManager.shared.fetchSession(sessionId: sessionId)
+            
+            self.currentSessionId = sessionId
+            self.questions = session.questions
+            try await UserHelperFunctions.updateSeenQuestions(userId: user.id, userSeenQuestions: userSeenQuestions, questions: questions)
+            try await updatedParticipants(for: session)
+            
+//            initializeGameSessionManager(sessionId: sessionId, playerId: user.id)
+            gameSessionManager.sessionID = sessionId
+            gameSessionManager.playerID = user.id
+            gameSessionManager.isMultiplayerGame = true
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
+        }
         
     }
     
-    func updatedParticipants(for session : MultiplayerQuizSession) async throws {
+    func updatedParticipants(for session : MultiplayerQuizSession) async {
+        //        self.sessionStatus.isLoading = true
         var updatedParticipants : [DBUser] = []
         
-        for participantId in session.participants {
-            if let dbuser = try await fetchParticipantData(for: participantId){
-                updatedParticipants.append(dbuser)
+        //        defer {
+        //            self.sessionStatus.isLoading = false
+        //        }
+        
+        do{
+            for participantId in session.participants {
+                if let dbuser = try await fetchParticipantData(for: participantId){
+                    updatedParticipants.append(dbuser)
+                }
             }
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
         }
     }
     
     func fetchParticipantData(for userId : String) async throws -> DBUser? {
         return try await UserManager.shared.getUser(id: userId)
     }
+    
     func observeParticipants(for sessionId: String) {
         DispatchQueue.main.async {
             self.participants = [] // Reset participants list on the main thread
@@ -127,15 +224,24 @@ class MultiplayerSessionViewModel: ObservableObject {
     }
     
     private func fetchUsers(for userIds: [String]) async throws -> [DBUser] {
+        self.sessionStatus.isLoading = true
+        
         var fetchedUsers: [DBUser] = []
         
         for userId in userIds {
+            
+            defer{
+                self.sessionStatus.isLoading = false
+            }
+            
             do {
                 let user = try await UserManager.shared.getUser(id: userId)
                 //                print(user)
                 fetchedUsers.append(user)
+                setNoSessionError()
             } catch {
                 print("Error fetching user \(userId): \(error.localizedDescription)")
+                setSessionError(error: error)
             }
         }
         
@@ -153,30 +259,52 @@ class MultiplayerSessionViewModel: ObservableObject {
     
     
     func submitAnswer(question: String, questionId: String, answer: Bool) async{
+        self.sessionStatus.isLoading = true
         guard let user, let currentSessionId else {
             print("No user logged in")
             return
         }
-        let updatedSessionData = try? await MultiplayerSessionManager.shared.submitAnswer(sessionId: currentSessionId, questionId: questionId, question: question , answer: answer, userId: user.id)
-        
-        
-        DispatchQueue.main.async {
-            self.answers = updatedSessionData!.questionsAndAnswers
+        defer{
+            self.sessionStatus.isLoading = false
+        }
+        do {
+            let updatedSessionData = try await MultiplayerSessionManager.shared.submitAnswer(sessionId: currentSessionId, questionId: questionId, question: question , answer: answer, userId: user.id)
+            
+            
+            DispatchQueue.main.async {
+                self.answers = updatedSessionData.questionsAndAnswers
+            }
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
         }
     }
     
-    func startQuiz() {
+    func startQuiz() async {
+        
+        self.sessionStatus.isLoading = true
+        
         guard let currentSessionId else {
             print("No user logged in")
             return
         }
         print("Starting the game")
         
-        DispatchQueue.main.async {
-            let gameStarted = MultiplayerSessionManager.shared.startQuiz(for: currentSessionId)
-            self.isGameStarted = gameStarted
-            print("gameStarted: \(gameStarted)")
-            //            print("isGameStarted: \(self.isGameStarted)")
+        defer{
+            self.sessionStatus.isLoading = true
+        }
+        
+        do{
+            let gameStarted = try await MultiplayerSessionManager.shared.startQuiz(for: currentSessionId)
+            DispatchQueue.main.async {
+                
+                self.isGameStarted = gameStarted
+                print("gameStarted: \(gameStarted)")
+                //            print("isGameStarted: \(self.isGameStarted)")
+            }
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
         }
     }
     
@@ -274,7 +402,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             print("No session ID available")
             return
         }
-
+        
         MultiplayerSessionManager.shared.observeSession(
             for: currentSessionId,
             lookingFor: LookingFor.forCurrentIndex,
@@ -300,12 +428,23 @@ class MultiplayerSessionViewModel: ObservableObject {
     }
     
     func updateQuestionIndexes() async{
+        self.sessionStatus.isLoading = true
+        
         guard let currentSessionId else {
             print("No session ID available")
             return
         }
         
-        try? await MultiplayerSessionManager.shared.updateQuestionIndexes(for: currentSessionId)
+        defer{
+            self.sessionStatus.isLoading = false
+        }
+        
+        do{
+            try await MultiplayerSessionManager.shared.updateQuestionIndexes(for: currentSessionId)
+            setNoSessionError()
+        }catch{
+            setSessionError(error: error)
+        }
     }
     
     func stopObservingSession() {
@@ -326,7 +465,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         // Dictionary to store the scores for each player
         print("Calculating scores...")
         var playerScores: [String: Int] = [:]
-
+        
         for questionAnswer in self.answers {
             // Iterate through each answer in the current question
             for answer in questionAnswer.answers {
@@ -341,11 +480,14 @@ class MultiplayerSessionViewModel: ObservableObject {
                 playerScores[playerId, default: 0] += score
             }
         }
-
+        
         print("Scores: \(playerScores)")
         self.score =  playerScores
     }
     
+    
+    
+
 }
 
 //hostId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory], qustions: [Question]

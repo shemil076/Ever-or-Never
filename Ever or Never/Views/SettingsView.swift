@@ -32,9 +32,28 @@ final class SettingsViewModel : ObservableObject {
 struct SettingsView: View {
     
     @StateObject private var settingsViewModel = SettingsViewModel()
+    @StateObject var profileViewModel = ProfileViewModel.shared
     @Binding var showSignInView: Bool
     var body: some View {
         List{
+            Section(header: Text("Profile")){
+                
+                if let user = profileViewModel.user {
+                    
+                    HStack(spacing: 50){
+                        Image("user")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                        
+                        VStack(alignment: .leading){
+                            Text(user.displayName)
+                                .font(.headline)
+                            Text(user.id)
+                        }
+                    }
+                }
+            }
             Button("Log out"){
                 Task{
                     do {
@@ -71,6 +90,11 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .onAppear{
+            Task{
+                try! await profileViewModel.loadCurrentUser()
+            }
+        }
     }
 }
 

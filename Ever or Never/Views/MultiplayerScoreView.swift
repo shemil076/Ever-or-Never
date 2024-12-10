@@ -9,6 +9,9 @@ import SwiftUI
 
 struct MultiplayerScoreView: View {
     @StateObject private var multiplaySessionViewModel = MultiplayerSessionViewModel.shared
+    @State private var showSignInView: Bool = false
+    @State private var navigateToModeSelection: Bool = false
+    @State private var showAlert : Bool = false
     var body: some View {
         ZStack{
             Spacer()
@@ -83,7 +86,7 @@ struct MultiplayerScoreView: View {
                                 .offset(x: -UIScreen.main.bounds.width / 2.5)
                         }
                     }
-    
+                    
                 }
 
                 
@@ -103,7 +106,7 @@ struct MultiplayerScoreView: View {
                 Spacer()
                 VStack(spacing:30){
                     Button {
-
+                        navigateToModeSelection = true
                     } label: {
                         Text("New Game")
                             .font(.headline)
@@ -127,7 +130,16 @@ struct MultiplayerScoreView: View {
                 }
                 .padding(.top, 10)
                 .padding(20)
+                
+                
+                NavigationLink(isActive: $navigateToModeSelection) {
+                    GameModeSelectionView(showSignInView: $showSignInView)
+                } label: {
+                    EmptyView()
+                }
+
             }
+//            .alert(isPresented: )
             
             
             .padding(20)
@@ -135,6 +147,7 @@ struct MultiplayerScoreView: View {
             .onAppear {
                 print("Multiplayer Score View Appeared")
                 multiplaySessionViewModel.calculateScores()
+                multiplaySessionViewModel.endQuiz()
             }
             .onDisappear(){
                 multiplaySessionViewModel.stopObservingSession()

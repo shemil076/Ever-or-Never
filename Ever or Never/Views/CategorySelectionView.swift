@@ -21,6 +21,7 @@ struct CategorySelectionView: View {
     @State private var alwaysFalse: Bool = false
     @State private var isGameSessionReady = false
     @State private var isContinueDisabled: Bool = false
+
     
     private let adaptiveColumn = [
         GridItem(.adaptive(minimum: 150))
@@ -222,7 +223,7 @@ struct CategorySelectionView: View {
             await singleGameSessionViewModel.loadQuestions(categoriers: selectedCategories, totalQuestionCount: selectedQuestionCount)
         }else{
             
-            try? await MultiplayerSessionViewModel.shared.initializeMultiplayerGameSessions(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
+            try await MultiplayerSessionViewModel.shared.initializeMultiplayerGameSessions(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
         }
     }
 }

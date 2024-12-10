@@ -10,6 +10,8 @@ import SwiftUI
 @MainActor
 final class ProfileViewModel: ObservableObject {
     
+    static let shared = ProfileViewModel()
+
     @Published private(set) var user: DBUser? = nil
    
     
@@ -32,7 +34,7 @@ final class ProfileViewModel: ObservableObject {
 
 struct ProfileView: View {
     
-    @StateObject var profileViewModel = ProfileViewModel() 
+    @StateObject var profileViewModel = ProfileViewModel.shared
     @Binding var showSignInView : Bool
     var body: some View {
         List{

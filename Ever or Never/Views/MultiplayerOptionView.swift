@@ -9,10 +9,14 @@ import SwiftUI
 
 struct MultiplayerOptionView: View {
     
-   
+    
     @State private var sessionIdInput : String = ""
     @State private var isGameSessionReady = false
     @State private var isSessionIdEmpty = false
+    @State private var isSessionIdInvalid = false
+    @State private var isJoinDisabled = false
+    @State private var showProgressView = false
+    
     var body: some View {
         ZStack{
             
@@ -41,21 +45,61 @@ struct MultiplayerOptionView: View {
                     if sessionIdInput == ""{
                         isSessionIdEmpty = true
                     }else{
+                        isJoinDisabled = true
+                        
+                        print("isLoading \(MultiplayerSessionViewModel.shared.sessionStatus.isLoading)")
+                        if MultiplayerSessionViewModel.shared.sessionStatus.isLoading {
+                            showProgressView = true
+                        }
                         Task{
                             try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
-                            isGameSessionReady = true
+                            if !MultiplayerSessionViewModel.shared.sessionStatus.isError{
+                                isGameSessionReady = true
+                            }else{
+                                isSessionIdInvalid = true
+                            }
+                            
+                            isJoinDisabled = false
                         }
+                        showProgressView = false
+                        print("isLoading \(MultiplayerSessionViewModel.shared.sessionStatus.isLoading)")
                     }
                     
                 } label: {
-                    Text("JOIN THE GAME")
-                        .font(.headline)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                        .foregroundColor(.white)
-                        .cornerRadius(15)
+                    if showProgressView{
+                        ProgressView()
+                    }else{
+                        Text("JOIN THE GAME")
+                            .font(.headline)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                            .foregroundColor(.white)
+                            .cornerRadius(15)
+                    }
                 }
+                .disabled(isJoinDisabled)
+                
+                
+                .alert(isPresented: Binding(get: {
+                    isSessionIdEmpty || isSessionIdInvalid
+                }, set: { newValue in
+                    if !newValue {
+                        isSessionIdEmpty = false
+                        isSessionIdInvalid = false
+                    }
+                })){
+                    if isSessionIdEmpty{
+                        return  Alert(title: Text("Session Id Empty"),
+                                      message: Text("Please enter a session id"),
+                                      dismissButton: .default(Text("OK")))
+                    }else{
+                        return Alert(title: Text("Something went wrong"),
+                                     message: Text("\(HelperFunctions.getUserFriendlyErrorMessage(stringError: MultiplayerSessionViewModel.shared.sessionStatus.errorDescription ?? "Error occurred"))"),
+                                     dismissButton: .default(Text("OK")))
+                    }
+                }
+                
                 
                 HStack{
                     VStack{
@@ -79,13 +123,13 @@ struct MultiplayerOptionView: View {
                     .font(.title)
                 
                 NavigationLink(destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(true))){
-//                    Text("Multiplayer")
-//                        .font(.headline)
-//                        .padding()
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.blue)
-//                        .foregroundColor(.white)
-//                        .cornerRadius(10)
+                    //                    Text("Multiplayer")
+                    //                        .font(.headline)
+                    //                        .padding()
+                    //                        .frame(maxWidth: .infinity)
+                    //                        .background(Color.blue)
+                    //                        .foregroundColor(.white)
+                    //                        .cornerRadius(10)
                     
                     VStack{
                         ZStack{
@@ -114,7 +158,7 @@ struct MultiplayerOptionView: View {
                                     )
                                     .padding(.top, 40)
                             }
-                                
+                            
                         }.background(
                             Rectangle()
                                 .fill(Color(red: 103/255, green: 134/255, blue: 236/255))
@@ -124,29 +168,29 @@ struct MultiplayerOptionView: View {
                         
                     }
                     
-                }
+                }.disabled(isJoinDisabled)
                 
-//                VStack{
-//                    HStack{
-//                        Text("Join now ")
-//                        
-//                        TextField("Session Id", text: $sessionIdInput)
-//                            .padding()
-//                            .background(Color.gray.opacity(0.4))
-//                            .cornerRadius(10)
-//                    }
-//                    
-//                    Button {
-//                        Task{
-//                            try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
-//                            isGameSessionReady = true
-//                        }
-//                    } label: {
-//                        Text("Start Quiz")
-//                    }
-//                    
-//                    
-//                }
+                //                VStack{
+                //                    HStack{
+                //                        Text("Join now ")
+                //
+                //                        TextField("Session Id", text: $sessionIdInput)
+                //                            .padding()
+                //                            .background(Color.gray.opacity(0.4))
+                //                            .cornerRadius(10)
+                //                    }
+                //
+                //                    Button {
+                //                        Task{
+                //                            try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
+                //                            isGameSessionReady = true
+                //                        }
+                //                    } label: {
+                //                        Text("Start Quiz")
+                //                    }
+                //
+                //
+                //                }
                 
                 NavigationLink(
                     destination: MultiplayLobby(),
@@ -162,13 +206,7 @@ struct MultiplayerOptionView: View {
             }
             .padding()
         }
-        .alert(isPresented: $isSessionIdEmpty){
-            Alert(title: Text("Session Id Empty"),
-                  message: Text("Please enter a session id"),
-                  dismissButton: .default(Text("OK")))
-        }
-//        .ignoresSafeArea()
-        }
+    }
 }
 
 #Preview {

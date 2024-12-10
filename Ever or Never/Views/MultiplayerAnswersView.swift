@@ -11,6 +11,9 @@ struct MultiplayerAnswersView: View {
     @StateObject private var multiplaySessionViewModel = MultiplayerSessionViewModel.shared
     @State var navigateToQuiz: Bool = false
     @State var navigateToScoreboard: Bool = false
+    @State private var showNotAllAnsweredAlert: Bool = false
+    @State private var isAllAnswered: Bool = false
+    
     var body: some View {
         ZStack{
             ViewBackground()
@@ -35,35 +38,68 @@ struct MultiplayerAnswersView: View {
                                 if multiplaySessionViewModel.answers.indices.contains(multiplaySessionViewModel.currentQuestionIndex) {
                                     let currentAnswers = multiplaySessionViewModel.answers[multiplaySessionViewModel.currentQuestionIndex].answers
                                     
+                                    
+                                    
                                     ForEach(currentAnswers) { answer in
                                         HStack(spacing: UIScreen.main.bounds.width * 0.4) {
                                             let playerIndex = multiplaySessionViewModel.participants.firstIndex(where: { $0.id == answer.playerId })
                                             ZStack{
                                                 Text(multiplaySessionViewModel.participants[playerIndex!].displayName)
-                                                    
-                                                    
+                                                
+                                                
                                             }.background(
-                                                    Rectangle()
-                                                        .fill(.white)
-                                                        .frame(width: UIScreen.main.bounds .width / 2 , height: 50)
-                                                        .cornerRadius(15)
-                                                        .padding(.leading, UIScreen.main.bounds .width * 0.15)
-                                                    
+                                                Rectangle()
+                                                    .fill(.white)
+                                                    .frame(width: UIScreen.main.bounds .width / 2 , height: 50)
+                                                    .cornerRadius(15)
+                                                    .padding(.leading, UIScreen.main.bounds .width * 0.15)
+                                                
                                             )
-                                            .padding(.leading, 20)
+                                            .padding(.leading, 10)
                                             
                                             ZStack{
                                                 Text(answer.answer ? "Yes" : "No")
                                                     .foregroundColor(.white)
                                             }.background(
-                                                    Rectangle()
-                                                        .fill(answer.answer ? Color(red: 78/255, green: 130/255, blue: 209/255) : .black)
-                                                        .frame(width: UIScreen.main.bounds .width / 4 , height: 50)
-                                                        .cornerRadius(15)
-                                                )
+                                                Rectangle()
+                                                    .fill(answer.answer ? Color(red: 78/255, green: 130/255, blue: 209/255) : .black)
+                                                    .frame(width: UIScreen.main.bounds .width / 4 , height: 50)
+                                                    .cornerRadius(15)
+                                            )
                                         }
                                         .padding()
                                     }
+                                    
+                                    
+                                    
+                                    
+                                    if multiplaySessionViewModel.hostId == multiplaySessionViewModel.user?.id{
+                                        Button{
+                                            
+                                            if currentAnswers.count != multiplaySessionViewModel.participants.count{
+                                                showNotAllAnsweredAlert = true
+                                            }else{
+                                                Task{
+                                                    try? await multiplaySessionViewModel.updateQuestionIndexes()
+                                                }
+                                            }
+                                            
+                                        } label: {
+                                            Text("Continue")
+                                                .font(.headline)
+                                                .foregroundStyle(.white)
+                                                .frame(height: 55)
+                                                .frame(maxWidth: .infinity)
+                                                .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                                                .cornerRadius(10)
+                                        }
+                                        .padding(.top, 20)
+                                    }
+                                    
+                                    
+                                    
+                                    
+                                    
                                 } else {
                                     Text("Waiting for players to submit answers...")
                                         .foregroundColor(.gray)
@@ -71,40 +107,51 @@ struct MultiplayerAnswersView: View {
                                 
                                 
                             }.padding(.horizontal, 20)
+                                .alert(isPresented: $showNotAllAnsweredAlert){
+                                    Alert(
+                                        title: Text("Wait.."),
+                                        message: Text("Wait for all players to submit answers"),
+                                        dismissButton: .default(Text("OK"), action: {
+                                            showNotAllAnsweredAlert = false
+                                        })
+                                    )
+                                }
                         }
-    //                    else{
-    //                        // When there are no more questions, navigate to the quiz screen
-    //                        Text("No more questions. Navigating...")
-    //                               .onAppear {
-    //                                   navigateToScoreboard = true
-    //                               }
-    //                    }
+                        //                    else{
+                        //                        // When there are no more questions, navigate to the quiz screen
+                        //                        Text("No more questions. Navigating...")
+                        //                               .onAppear {
+                        //                                   navigateToScoreboard = true
+                        //                               }
+                        //                    }
                     }
                 }
                 
                 
-                if multiplaySessionViewModel.hostId == multiplaySessionViewModel.user?.id{
-                    Button{
-    //                    if multiplaySessionViewModel.currentQuestionIndex <= multiplaySessionViewModel.questions.count {
-    //                        navigateToQuiz = true
-    //                    }else{
-    //                        navigateToScoreboard = true
-    //                    }
-                        
-                        Task{
-                            try? await multiplaySessionViewModel.updateQuestionIndexes()
-                        }
-                    } label: {
-                        Text("Continue")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(height: 55)
-                            .frame(maxWidth: .infinity)
-                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                            .cornerRadius(10)
-                    }
-                    .padding()
-                }
+                //                if multiplaySessionViewModel.hostId == multiplaySessionViewModel.user?.id{
+                //                    Button{
+                //    //                    if multiplaySessionViewModel.currentQuestionIndex <= multiplaySessionViewModel.questions.count {
+                //    //                        navigateToQuiz = true
+                //    //                    }else{
+                //    //                        navigateToScoreboard = true
+                //    //                    }
+                //
+                ////                        if multiplaySessionViewModel
+                //
+                //                        Task{
+                //                            try? await multiplaySessionViewModel.updateQuestionIndexes()
+                //                        }
+                //                    } label: {
+                //                        Text("Continue")
+                //                            .font(.headline)
+                //                            .foregroundStyle(.white)
+                //                            .frame(height: 55)
+                //                            .frame(maxWidth: .infinity)
+                //                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                //                            .cornerRadius(10)
+                //                    }
+                //                    .padding()
+                //                }
                 
                 NavigationLink(
                     destination: MultiplayerScoreView(),
@@ -116,32 +163,33 @@ struct MultiplayerAnswersView: View {
                 
                 
             }.padding()
-            .onAppear{
-                navigateToQuiz = false
-                multiplaySessionViewModel.observeSessionAnswers()
-                multiplaySessionViewModel.observeSessionForIndexesUpdate()
-            }
-            .onDisappear(){
-    //            multiplaySessionViewModel.stopObservingSession()
-            }
-            .onChange(of: multiplaySessionViewModel.currentQuestionIndex) { currentQuestionIndex in
-                if multiplaySessionViewModel.previousQuestionIndex != currentQuestionIndex{
-                    navigateToQuiz = true
+                .onAppear{
+                    navigateToQuiz = false
+                    multiplaySessionViewModel.observeSessionAnswers()
+                    multiplaySessionViewModel.observeSessionForIndexesUpdate()
                 }
-                if !multiplaySessionViewModel.questions.indices.contains(multiplaySessionViewModel.currentQuestionIndex) {
-                    navigateToScoreboard = true
+                .onDisappear(){
+                    //            multiplaySessionViewModel.stopObservingSession()
+                    isAllAnswered = false
                 }
-                
-            }
-            .background(
-                NavigationLink(
-                    destination: MultiplayerQuizView(),
-                    isActive: $navigateToQuiz,
-                    label: { EmptyView() }
+                .onChange(of: multiplaySessionViewModel.currentQuestionIndex) { currentQuestionIndex in
+                    if multiplaySessionViewModel.previousQuestionIndex != currentQuestionIndex{
+                        navigateToQuiz = true
+                    }
+                    if !multiplaySessionViewModel.questions.indices.contains(multiplaySessionViewModel.currentQuestionIndex) {
+                        navigateToScoreboard = true
+                    }
+                    
+                }
+                .background(
+                    NavigationLink(
+                        destination: MultiplayerQuizView(),
+                        isActive: $navigateToQuiz,
+                        label: { EmptyView() }
+                    )
                 )
-            )
         }.navigationBarBackButtonHidden()
-//        .ignoresSafeArea()
+        //        .ignoresSafeArea()
     }
 }
 

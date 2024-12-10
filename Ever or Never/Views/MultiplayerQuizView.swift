@@ -11,6 +11,7 @@ struct MultiplayerQuizView: View {
     @StateObject private var multiplaySessionViewModel = MultiplayerSessionViewModel.shared
 //    @State private var currentQuestionIndex: Int = 0
     @State private var showAnswer: Bool = false
+    @State private var showAlert : Bool = false
     var body: some View {
         ZStack{
             ViewBackground()
@@ -57,15 +58,20 @@ struct MultiplayerQuizView: View {
                                     Task{
                                         await multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id, answer: true)
                                         
+                                        
+                                        if multiplaySessionViewModel.sessionStatus.isError{
+                                            showAlert = true
+                                        }
                                     }
                                     showAnswer = true
         //                            currentQuestionIndex += 1
                                     
-                                } else {
-                                    // End of quiz logic
-                                   
-                                    
                                 }
+//                                else {
+//                                    // End of quiz logic
+//                                   
+//                                    
+//                                }
                                 
                     
                             } label: {
@@ -83,13 +89,18 @@ struct MultiplayerQuizView: View {
                                     
                                     Task{
                                         await    multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id, answer: false)
+                                        
+                                        if multiplaySessionViewModel.sessionStatus.isError{
+                                            showAlert = true
+                                        }
                                     }
                                     
         //                            currentQuestionIndex += 1
                                     showAnswer = true
-                                } else {
-                                    // End of quiz logic
                                 }
+//                                else {
+//                                    // End of quiz logic
+//                                }
                             } label: {
                                 Text("No")
                                     .font(.headline)
@@ -111,12 +122,22 @@ struct MultiplayerQuizView: View {
                         ){
                             EmptyView()
                         }
-                    }else{
-                        
-        //                ScoreView(singlePlayerViwModel: singlePlayerViwModel)
                     }
+//                    else{
+//                        
+//                        ScoreView(singlePlayerViwModel: singlePlayerViwModel)
+//                    }
                 }
                 .padding(20)
+                .alert(isPresented: $showAlert){
+                    Alert(
+                        title: Text("Error occurred"),
+                        message: Text("\(HelperFunctions.getUserFriendlyErrorMessage(stringError: MultiplayerSessionViewModel.shared.sessionStatus.errorDescription ?? "Something went wrong"))"),
+                        dismissButton: .default(Text("OK"), action: {
+                            showAlert = false
+                        })
+                    )
+                }
             }
             .padding(20)
            
@@ -127,21 +148,3 @@ struct MultiplayerQuizView: View {
 #Preview {
     MultiplayerQuizView()
 }
-
-
-//
-//Button {
-//    Task{
-//        try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
-//        isGameSessionReady = true
-//    }
-//} label: {
-//    Text("Start Quiz")
-//}
-//
-//NavigationLink(
-//    destination: MultiplayLobby(),
-//    isActive: $isGameSessionReady
-//) {
-//    EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
-//}

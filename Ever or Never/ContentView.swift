@@ -8,33 +8,48 @@
 import SwiftUI
 
 struct ContentView: View {
-    
+    @StateObject var gameSessionManager =  GameSessionManager.shared
     @State private var showSignInView: Bool = false
-    
-    
-    
-    
+    @Environment(\.scenePhase) var scenePhase
+
     var body: some View {
-        ZStack{
-            NavigationStack{
-//                Text("Nothing here yet, trying to populate the DB")
-//                ProfileView(showSignInView: $showSignInView)
+        ZStack {
+            NavigationStack {
                 GameModeSelectionView(showSignInView: $showSignInView)
-//                SettingsView(showSignInView: $showSignInView)
+                    .onChange(of: scenePhase) { newValue in
+                        handleScenePhaseChange(newValue)
+                    }
             }
         }
-        .onAppear{
-//            let _ = try? QuestionsManager.shared.populateQuestionsCollection()
+        .onAppear {
             let authUser = try? AuthenticationManager.shared.getAuthenticatedUser()
-            self.showSignInView = authUser == nil 
+            self.showSignInView = authUser == nil
         }
         .fullScreenCover(isPresented: $showSignInView) {
-            NavigationStack{
+            NavigationStack {
                 AuthenticationView(showSignInView: $showSignInView)
             }
         }
     }
+
+    func handleScenePhaseChange(_ scenePhase: ScenePhase) {
+        guard gameSessionManager.isMultiplayerGame,
+              let sessionID = gameSessionManager.sessionID,
+              let playerID = gameSessionManager.playerID else { return }
+
+        switch scenePhase {
+        case .active:
+            print("Active")
+        case .inactive:
+            print("Inactive")
+        case .background:
+            print("Background")
+        default:
+            break
+        }
+    }
 }
+
 
 #Preview {
     ContentView()

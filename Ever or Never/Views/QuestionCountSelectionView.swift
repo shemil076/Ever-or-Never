@@ -15,6 +15,7 @@ struct QuestionCountSelectionView: View {
     @State private var isShowAlert : Bool = false
     
     @State private var buttons : [ButtonAttributes] = [
+        ButtonAttributes(isButtonClicked: false, associatedValue: QuestionCount.five),
         ButtonAttributes(isButtonClicked: false, associatedValue: QuestionCount.ten),
         ButtonAttributes(isButtonClicked: false, associatedValue: QuestionCount.fifty),
         ButtonAttributes(isButtonClicked: false, associatedValue: QuestionCount.hundred),
@@ -119,6 +120,7 @@ struct ButtonAttributes: Identifiable{
 }
 
 enum QuestionCount: CaseIterable {
+    case five
     case ten
     case fifty
     case hundred
@@ -126,7 +128,8 @@ enum QuestionCount: CaseIterable {
     
     var rawValue: Int {
         switch self {
-        case .ten: return 5
+        case .five: return 5
+        case .ten: return 10
         case .fifty: return 50
         case .hundred: return 100
             //        case .infinity: return Int.max
