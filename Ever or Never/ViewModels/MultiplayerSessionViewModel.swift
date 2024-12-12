@@ -18,7 +18,8 @@ class MultiplayerSessionViewModel: ObservableObject {
         
     }
     
-    @StateObject var gameSessionManager =  GameSessionManager.shared
+    @Published private var gameSessionManager =  GameSessionManager.shared
+    @Published private var multiplayerSessionManager = MultiplayerSessionManager();
     
     @Published var currentSessionId : String? = nil
     @Published var questions: [Question] = []
@@ -98,6 +99,8 @@ class MultiplayerSessionViewModel: ObservableObject {
     func initializeMultiplayerGameSessions(selectedCategories: [QuestionCategory], totalQuestionCount: Int) async {
         self.sessionStatus.isLoading = true
         
+        resetData()
+        
         print("running this")
         try await loadCurrentUser()
         await loadQuestions(categoriers:selectedCategories, totalQuestionCount: totalQuestionCount)
@@ -111,7 +114,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             if (!questions.isEmpty && (user != nil)){
                 print(questions.count)
                 
-                let (sessionId, hostId) =  try await MultiplayerSessionManager.shared.createMultiplayerSession(hostId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories, qustions: self.questions )
+                let (sessionId, hostId) =  try await multiplayerSessionManager.createMultiplayerSession(hostId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories, qustions: self.questions )
                 self.currentSessionId = sessionId
                 self.hostId = hostId
                 print("session created")
@@ -149,9 +152,9 @@ class MultiplayerSessionViewModel: ObservableObject {
             self.sessionStatus.isLoading = false
         }
         do{
-            let _: () = try await MultiplayerSessionManager.shared.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
+            let _: () = try await multiplayerSessionManager.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
             
-            let session = try await MultiplayerSessionManager.shared.fetchSession(sessionId: sessionId)
+            let session = try await multiplayerSessionManager.fetchSession(sessionId: sessionId)
             
             self.currentSessionId = sessionId
             self.questions = session.questions
@@ -198,7 +201,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             self.participants = [] // Reset participants list on the main thread
         }
         
-        MultiplayerSessionManager.shared.observeParticipants(
+        multiplayerSessionManager.observeParticipants(
             
             
             sessionId: sessionId,
@@ -268,7 +271,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             self.sessionStatus.isLoading = false
         }
         do {
-            let updatedSessionData = try await MultiplayerSessionManager.shared.submitAnswer(sessionId: currentSessionId, questionId: questionId, question: question , answer: answer, userId: user.id)
+            let updatedSessionData = try await multiplayerSessionManager.submitAnswer(sessionId: currentSessionId, questionId: questionId, question: question , answer: answer, userId: user.id)
             
             
             DispatchQueue.main.async {
@@ -295,7 +298,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         }
         
         do{
-            let gameStarted = try await MultiplayerSessionManager.shared.startQuiz(for: currentSessionId)
+            let gameStarted = try await multiplayerSessionManager.startQuiz(for: currentSessionId)
             DispatchQueue.main.async {
                 
                 self.isGameStarted = gameStarted
@@ -314,7 +317,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             print("No user logged in")
             return
         }
-        self.isGameStarted = MultiplayerSessionManager.shared.endQuiz(for: currentSessionId)
+        self.isGameStarted = multiplayerSessionManager.endQuiz(for: currentSessionId)
     }
     
     
@@ -324,7 +327,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
         
-        MultiplayerSessionManager.shared.observeSession(
+        multiplayerSessionManager.observeSession(
             for: currentSessionId,
             lookingFor: .forStates,
             onUpdate: { [weak self] update in
@@ -352,7 +355,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
         
-        MultiplayerSessionManager.shared.observeSession(
+        multiplayerSessionManager.observeSession(
             for: currentSessionId,
             lookingFor: .forAnswer,
             onUpdate: { [weak self] updatedAnswers in
@@ -403,7 +406,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
         
-        MultiplayerSessionManager.shared.observeSession(
+        multiplayerSessionManager.observeSession(
             for: currentSessionId,
             lookingFor: LookingFor.forCurrentIndex,
             onUpdate: { [weak self] updatedIndexes in
@@ -440,7 +443,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         }
         
         do{
-            try await MultiplayerSessionManager.shared.updateQuestionIndexes(for: currentSessionId)
+            try await multiplayerSessionManager.updateQuestionIndexes(for: currentSessionId)
             setNoSessionError()
         }catch{
             setSessionError(error: error)
@@ -485,8 +488,39 @@ class MultiplayerSessionViewModel: ObservableObject {
         self.score =  playerScores
     }
     
+    func removeQuitedPlayers() async{
+        guard let userId = self.user?.id , let currentSessionId else{
+            print("No user or session id")
+            return
+        }
+        
+        do {
+            try await multiplayerSessionManager.removePlayer(sessionId: currentSessionId, playerId: userId)
+            resetData()
+            
+            print("Player removed")
+        } catch{
+            print("Could not remove player")
+        }
+    }
     
-    
+    private func resetData() {
+          currentSessionId = nil
+          questions = []
+          yesAnswerCount = 0
+          noAnswerCount = 0
+          answers = []
+          participants = []
+          hostId = ""
+          isGameStarted = false
+          isGameEnded = false
+          currentQuestionIndex = 0
+          previousQuestionIndex = -1
+          user = nil
+          score = [:]
+          sessionStatus = SessionStatus(isLoading: false, isError: false)
+          participantListener = nil
+      }
 
 }
 

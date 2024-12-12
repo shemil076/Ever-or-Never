@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var multiplaySessionViewModel = MultiplayerSessionViewModel.shared
     @StateObject var gameSessionManager =  GameSessionManager.shared
     @State private var showSignInView: Bool = false
+    
+    @State private var navigateToGameModeSelection: Bool = false
     @Environment(\.scenePhase) var scenePhase
 
     var body: some View {
@@ -20,10 +23,18 @@ struct ContentView: View {
                         handleScenePhaseChange(newValue)
                     }
             }
+            
+            NavigationLink(isActive: $navigateToGameModeSelection) {
+                GameModeSelectionView(showSignInView: $showSignInView)
+            } label: {
+                EmptyView()
+            }
+
         }
         .onAppear {
             let authUser = try? AuthenticationManager.shared.getAuthenticatedUser()
             self.showSignInView = authUser == nil
+            self.navigateToGameModeSelection = false
         }
         .fullScreenCover(isPresented: $showSignInView) {
             NavigationStack {
@@ -32,7 +43,7 @@ struct ContentView: View {
         }
     }
 
-    func handleScenePhaseChange(_ scenePhase: ScenePhase) {
+    func handleScenePhaseChange(_ scenePhase: ScenePhase)  {
         guard gameSessionManager.isMultiplayerGame,
               let sessionID = gameSessionManager.sessionID,
               let playerID = gameSessionManager.playerID else { return }
@@ -42,8 +53,16 @@ struct ContentView: View {
             print("Active")
         case .inactive:
             print("Inactive")
+            if multiplaySessionViewModel.isGameStarted && !multiplaySessionViewModel.isGameEnded{
+                Task{
+                    try? await Task.sleep(nanoseconds: 10_000_000_000)
+                    await multiplaySessionViewModel.removeQuitedPlayers()
+                    navigateToGameModeSelection = true
+                }
+            }
         case .background:
             print("Background")
+        
         default:
             break
         }

@@ -89,10 +89,10 @@ struct MultiplayerQuizSession: Codable{
 }
 
 final class MultiplayerSessionManager{
-    static let shared = MultiplayerSessionManager()
+//    static let shared = MultiplayerSessionManager()
     
     
-    private init() {
+     init() {
         
     }
     
@@ -357,6 +357,7 @@ final class MultiplayerSessionManager{
                 print("Question index is updated, current: \(currentIndex), previous:\(previousQuestionIndex)")
                 onUpdate((currentIndex, previousQuestionIndex))
             }
+            
         }
     }
     
@@ -403,6 +404,40 @@ final class MultiplayerSessionManager{
         }
         return isGameEnded
     }
+    
+    
+    func removePlayer(sessionId: String, playerId: String) async throws {
+        let docRef = multiplayerSessionCollection.document(sessionId)
+        
+        do {
+            // Fetch the document
+            let snapshot = try await docRef.getDocument()
+            
+            guard let data = snapshot.data(),
+                  var questionsAndAnswers = data["questionsAndAnswers"] as? [[String: Any]] else {
+                throw NSError(domain: "FirestoreError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid data format."])
+            }
+            
+            // Remove the player's answers
+            for i in 0..<questionsAndAnswers.count {
+                if var answers = questionsAndAnswers[i]["answers"] as? [[String: Any]] {
+                    answers.removeAll { $0["playerId"] as? String == playerId }
+                    questionsAndAnswers[i]["answers"] = answers
+                }
+            }
+            
+//            try await docRef.updateData(["participants" : arrayReove(playerId)])
+            
+            try await docRef.updateData(["participants": FieldValue.arrayRemove([playerId])])
+            // Update the document
+            try await docRef.updateData(["questionsAndAnswers": questionsAndAnswers])
+        } catch {
+            // Handle or re-throw the error
+            print("Error: \(error.localizedDescription)")
+            throw error
+        }
+    }
+
     
 }
 

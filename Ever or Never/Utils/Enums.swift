@@ -11,5 +11,5 @@ enum LookingFor: String, CaseIterable {
     case forStates = "ForStates"
     case forAnswer = "ForAnswer"
     case forCurrentIndex = "ForCurrentIndex"
-    
+    case forPlayerRemoval = "ForPlayerRemoval"
 }
