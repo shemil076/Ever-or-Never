@@ -51,15 +51,19 @@ struct ContentView: View {
         switch scenePhase {
         case .active:
             print("Active")
+            gameSessionManager.markActive()
+            
         case .inactive:
             print("Inactive")
-            if multiplaySessionViewModel.isGameStarted && !multiplaySessionViewModel.isGameEnded{
-                Task{
-                    try? await Task.sleep(nanoseconds: 10_000_000_000)
-                    await multiplaySessionViewModel.removeQuitedPlayers()
-                    navigateToGameModeSelection = true
-                }
-            }
+            gameSessionManager.markActive()
+            
+//            if multiplaySessionViewModel.isGameStarted && !multiplaySessionViewModel.isGameEnded{
+//                Task{
+//                    try? await Task.sleep(nanoseconds: 10_000_000_000)
+//                    await multiplaySessionViewModel.removeQuitedPlayers()
+//                    navigateToGameModeSelection = true
+//                }
+//            }
         case .background:
             print("Background")
         

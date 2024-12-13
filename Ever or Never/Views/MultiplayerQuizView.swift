@@ -142,6 +142,10 @@ struct MultiplayerQuizView: View {
             .padding(20)
            
         } .navigationBarBackButtonHidden()
+            .onAppear{
+                multiplaySessionViewModel.observeForParticipantsStatus()
+
+            }
     }
 }
 

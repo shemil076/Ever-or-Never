@@ -167,6 +167,9 @@ struct MultiplayerAnswersView: View {
                     navigateToQuiz = false
                     multiplaySessionViewModel.observeSessionAnswers()
                     multiplaySessionViewModel.observeSessionForIndexesUpdate()
+                    multiplaySessionViewModel.observeForParticipantsStatus()
+                    
+                    
                 }
                 .onDisappear(){
                     //            multiplaySessionViewModel.stopObservingSession()

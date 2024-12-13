@@ -148,6 +148,8 @@ struct MultiplayerScoreView: View {
                 print("Multiplayer Score View Appeared")
                 multiplaySessionViewModel.calculateScores()
                 multiplaySessionViewModel.endQuiz()
+                multiplaySessionViewModel.observeForParticipantsStatus()
+
             }
             .onDisappear(){
                 multiplaySessionViewModel.stopObservingSession()

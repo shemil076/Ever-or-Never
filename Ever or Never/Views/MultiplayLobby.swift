@@ -48,28 +48,30 @@ struct MultiplayLobby: View {
                                 )
                                 .padding()
                                 
-                                HStack {
-                                    Button {
-                                        HelperFunctions.copyToClipboard(id: multiplaySessionViewModel.currentSessionId!, isCopied: $isCopied)
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                            isCopied = false 
+                                if multiplaySessionViewModel.currentSessionId != nil {
+                                    HStack {
+                                        Button {
+                                            HelperFunctions.copyToClipboard(id: multiplaySessionViewModel.currentSessionId!, isCopied: $isCopied)
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                                isCopied = false
+                                            }
+                                        } label: {
+                                            Image(systemName: isCopied ? "document.on.clipboard.fill" : "doc.on.clipboard")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.gray)
+                                                .frame(width: 44, height: 44)
+                                                .accessibilityLabel("Copy Quote")
+                                                .accessibilityHint("Copies the current quote to clipboard")
                                         }
-                                    } label: {
-                                        Image(systemName: isCopied ? "document.on.clipboard.fill" : "doc.on.clipboard")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(.gray)
-                                            .frame(width: 44, height: 44)
-                                            .accessibilityLabel("Copy Quote")
-                                            .accessibilityHint("Copies the current quote to clipboard")
-                                    }
-                                    
-                                    ShareLink(item: "Use this session id to join: \n\n" + multiplaySessionViewModel.currentSessionId! + "\n\n"  + "Ever Ready, Never Bored – Let the Fun Begin! 🎉"){
-                                        Image(systemName: "square.and.arrow.up")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(.gray)
-                                            .accessibilityLabel("Share Quote")
-                                            .frame(width: 44, height: 44)
-                                            .accessibilityHint("Shares the current quote")
+                                        
+                                        ShareLink(item: "Use this session id to join: \n\n" + multiplaySessionViewModel.currentSessionId! + "\n\n"  + "Ever Ready, Never Bored – Let the Fun Begin! 🎉"){
+                                            Image(systemName: "square.and.arrow.up")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.gray)
+                                                .accessibilityLabel("Share Quote")
+                                                .frame(width: 44, height: 44)
+                                                .accessibilityHint("Shares the current quote")
+                                        }
                                     }
                                 }
                                 
@@ -112,16 +114,6 @@ struct MultiplayLobby: View {
                             }
                         }
                         
-                        // Displaying the list of participants
-                        //                    List(multiplaySessionViewModel.participants) { participant in
-                        //                        VStack(alignment: .leading) {
-                        //                            Text(participant.displayName)
-                        //                                .font(.headline)
-                        //                            Text(participant.id)
-                        //                                .font(.subheadline)
-                        //                                .foregroundColor(.gray)
-                        //                        }
-                        //                    }
                     }.padding()
                     
     //                Spacer()
@@ -148,6 +140,8 @@ struct MultiplayLobby: View {
                 if let sessionId = multiplaySessionViewModel.currentSessionId {
                     multiplaySessionViewModel.observeParticipants(for: sessionId)
                     multiplaySessionViewModel.observeSessionStates()
+                    multiplaySessionViewModel.observeForParticipantsStatus()
+    
                 }
             }
             .onDisappear {

@@ -8,14 +8,16 @@
 import Foundation
 import FirebaseFirestore
 import SwiftUICore
+import Combine
 
 @MainActor
 class MultiplayerSessionViewModel: ObservableObject {
     
     static let shared = MultiplayerSessionViewModel()
+    private var cancellables = Set<AnyCancellable>()
     
     private init() {
-        
+        setupObservers()
     }
     
     @Published private var gameSessionManager =  GameSessionManager.shared
@@ -27,6 +29,7 @@ class MultiplayerSessionViewModel: ObservableObject {
     @Published var noAnswerCount: Int = 0
     @Published var answers: [MultiplayerQuestionAnswer] = []
     @Published var participants: [DBUser] = []
+    @Published var activeParticipants: [String] = []
     @Published var hostId: String = ""
     @Published var isGameStarted : Bool = false
     @Published var isGameEnded : Bool = false
@@ -120,18 +123,21 @@ class MultiplayerSessionViewModel: ObservableObject {
                 print("session created")
                 
                 
-//                gameSessionManager.sessionID = sessionId
-//                gameSessionManager.isMultiplayerGame = true
-//                gameSessionManager.playerID = user!.id
-//
-//                initializeGameSessionManager(sessionId: sessionId!, playerId: user!.id)
+                //                gameSessionManager.sessionID = sessionId
+                //                gameSessionManager.isMultiplayerGame = true
+                //                gameSessionManager.playerID = user!.id
+                //
+                //                initializeGameSessionManager(sessionId: sessionId!, playerId: user!.id)
                 gameSessionManager.sessionID = sessionId
                 gameSessionManager.playerID = user!.id
                 gameSessionManager.isMultiplayerGame = true
                 
+                multiplayerSessionManager.trackUserConnection(sessionId: sessionId!, playerId: user!.id)
             }
             participants.append(user!)
+            //            activeParticipants.append(user!.id)
             print(currentSessionId)
+            
             setNoSessionError()
         }catch{
             setSessionError(error: error)
@@ -147,6 +153,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
         participants.append(user)
+        //        activeParticipants.append(user.id)
         
         defer {
             self.sessionStatus.isLoading = false
@@ -161,10 +168,14 @@ class MultiplayerSessionViewModel: ObservableObject {
             try await UserHelperFunctions.updateSeenQuestions(userId: user.id, userSeenQuestions: userSeenQuestions, questions: questions)
             try await updatedParticipants(for: session)
             
-//            initializeGameSessionManager(sessionId: sessionId, playerId: user.id)
+            //            initializeGameSessionManager(sessionId: sessionId, playerId: user.id)
             gameSessionManager.sessionID = sessionId
             gameSessionManager.playerID = user.id
             gameSessionManager.isMultiplayerGame = true
+            
+            
+            
+            multiplayerSessionManager.trackUserConnection(sessionId: sessionId, playerId: user.id)
             setNoSessionError()
         }catch{
             setSessionError(error: error)
@@ -505,23 +516,75 @@ class MultiplayerSessionViewModel: ObservableObject {
     }
     
     private func resetData() {
-          currentSessionId = nil
-          questions = []
-          yesAnswerCount = 0
-          noAnswerCount = 0
-          answers = []
-          participants = []
-          hostId = ""
-          isGameStarted = false
-          isGameEnded = false
-          currentQuestionIndex = 0
-          previousQuestionIndex = -1
-          user = nil
-          score = [:]
-          sessionStatus = SessionStatus(isLoading: false, isError: false)
-          participantListener = nil
-      }
-
+        currentSessionId = nil
+        questions = []
+        yesAnswerCount = 0
+        noAnswerCount = 0
+        answers = []
+        participants = []
+        hostId = ""
+        isGameStarted = false
+        isGameEnded = false
+        currentQuestionIndex = 0
+        previousQuestionIndex = -1
+        user = nil
+        score = [:]
+        sessionStatus = SessionStatus(isLoading: false, isError: false)
+        participantListener = nil
+        activeParticipants = []
+    }
+    
+    
+    
+    func observeForParticipantsStatus(){
+        guard let currentSessionId else {
+            print("No session ID available")
+            return
+        }
+        
+        print("observing participants status")
+        
+        multiplayerSessionManager.observeActiveParticipants(
+            for: currentSessionId,
+            onUpdate: { [weak self] activePlayers in
+                guard let self else { return }
+                
+                DispatchQueue.main.async {
+                    self.activeParticipants = activePlayers
+                    print("active participants updated\(activePlayers)")
+                }
+            }
+        )
+    }
+    
+    
+    func syncActiveParticipants() async{
+        guard let currentSessionId else {
+            print("No session ID available")
+            return
+        }
+        
+        print("syncing active participants..")
+        do {
+            try await multiplayerSessionManager.syncActiveParticipantsWithFirestore(sessionId: currentSessionId, activeUsers: activeParticipants)
+        }catch{
+            print(error.localizedDescription)
+        }
+    }
+    
+    func setupObservers() {
+           Publishers.CombineLatest($participants, $activeParticipants)
+               .sink { [weak self] participants, activeParticipants in
+                   guard let self = self else { return }
+                   if participants.count != activeParticipants.count {
+                       Task {
+                           await self.syncActiveParticipants()
+                       }
+                   }
+               }
+               .store(in: &cancellables)
+       }
+    
 }
 
 //hostId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory], qustions: [Question]

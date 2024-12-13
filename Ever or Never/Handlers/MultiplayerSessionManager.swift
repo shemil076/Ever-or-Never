@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseFirestore
+import FirebaseDatabase
 
 struct MultiplayerQuizSession: Codable{
     var id: String
@@ -21,9 +22,10 @@ struct MultiplayerQuizSession: Codable{
     let isGameStarted: Bool
     let currentQuestionIndex: Int
     let previousQuestionIndex: Int
+    let activeParticipants: [String]
     
     
-    init(id: String = "", dateCreated: Date, hostId: String, numberOfQuestions: Int, questionCategories: [QuestionCategory], questionsAndAnswers: [MultiplayerQuestionAnswer], participants: [String], questions: [Question], isGameEnded: Bool, isGameStarted: Bool, currentQuestionIndex: Int, previousQuestionIndex: Int) {
+    init(id: String = "", dateCreated: Date, hostId: String, numberOfQuestions: Int, questionCategories: [QuestionCategory], questionsAndAnswers: [MultiplayerQuestionAnswer], participants: [String], questions: [Question], isGameEnded: Bool, isGameStarted: Bool, currentQuestionIndex: Int, previousQuestionIndex: Int, activeParticipants: [String]) {
         self.id = id
         self.dateCreated = dateCreated
         self.hostId = hostId
@@ -36,6 +38,7 @@ struct MultiplayerQuizSession: Codable{
         self.isGameStarted = isGameStarted
         self.currentQuestionIndex = currentQuestionIndex
         self.previousQuestionIndex = previousQuestionIndex
+        self.activeParticipants = activeParticipants
     }
     
     func encode(to encoder: any Encoder) throws {
@@ -52,6 +55,7 @@ struct MultiplayerQuizSession: Codable{
         try container.encode(self.isGameStarted, forKey: .isGameStarted)
         try container.encode(self.currentQuestionIndex, forKey: .currentQuestionIndex)
         try container.encode(self.previousQuestionIndex, forKey: .previousQuestionIndex)
+        try container.encode(self.activeParticipants, forKey: .activeParticipants)
     }
     
     enum CodingKeys:String, CodingKey {
@@ -67,6 +71,7 @@ struct MultiplayerQuizSession: Codable{
         case isGameStarted = "isGameStarted"
         case currentQuestionIndex = "currentQuestionIndex"
         case previousQuestionIndex = "previousQuestionIndex"
+        case activeParticipants = "activeParticipants"
     }
     
     init(from decoder: any Decoder) throws {
@@ -84,6 +89,7 @@ struct MultiplayerQuizSession: Codable{
         self.isGameStarted = try container.decodeIfPresent(Bool.self, forKey: .isGameStarted) ?? false
         self.currentQuestionIndex = try container.decodeIfPresent(Int.self, forKey: .currentQuestionIndex) ?? 0
         self.previousQuestionIndex = try container.decodeIfPresent(Int.self, forKey: .previousQuestionIndex) ?? 0
+        self.activeParticipants = try container.decodeIfPresent([String].self, forKey: .activeParticipants) ?? []
     }
     
 }
@@ -114,7 +120,8 @@ final class MultiplayerSessionManager{
             isGameEnded: false,
             isGameStarted: false,
             currentQuestionIndex: 0,
-            previousQuestionIndex: 0
+            previousQuestionIndex: 0,
+            activeParticipants: [hostId]
         )
         
         var sessionId: String?
@@ -163,7 +170,8 @@ final class MultiplayerSessionManager{
         
         do {
            try await sessionRef.updateData([
-                "participants": FieldValue.arrayUnion([userId])
+                "participants": FieldValue.arrayUnion([userId]),
+                "activeParticipants" : FieldValue.arrayUnion([userId])
             ])
             print("Player \(userId) successfully joined the multiplayer session \(sessionId).")
             
@@ -437,7 +445,111 @@ final class MultiplayerSessionManager{
             throw error
         }
     }
-
     
+    
+    func removeFromActivePlayers(sessionId : String, playerId: String) async throws {
+        
+        let sessionRef = multiplayerSessionCollection.document(sessionId)
+        
+        do {
+            try await sessionRef.updateData([
+                "activePlayers" : FieldValue.arrayRemove([playerId])
+            ])
+            
+            print("Player \(playerId) quit the game")
+            
+        } catch {
+            print("Error removing player \(playerId) from active players, \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    
+//  MARK:  Using Firebase Realtime database.
+//    func trackUserConnection(sessionId : String, playerId: String) {
+//        let database = Database.database().reference()
+//        let userStatusRef = database.child("activeParticipants/\(sessionId)/\(playerId)")
+//    
+//        print(userStatusRef)
+//        userStatusRef.setValue(true)
+//        
+//        userStatusRef.onDisconnectSetValue(nil)
+//
+//    }
+    func trackUserConnection(sessionId: String, playerId: String) {
+        print("inside the status traker")
+        let database = Database.database().reference()
+        let userStatusRef = database.child("activeParticipants/\(sessionId)/\(playerId)")
+
+        print(userStatusRef.key)
+        // Set the user's status to true
+        userStatusRef.setValue(true) { error, _ in
+            if let error = error {
+                print("Error setting value: \(error.localizedDescription)")
+            } else {
+                print("User \(playerId) status set to true in session \(sessionId).")
+                
+                // Print the updated value
+                userStatusRef.observeSingleEvent(of: .value) { snapshot in
+                    if let value = snapshot.value {
+                        print("Updated value for \(playerId): \(value)")
+                    } else {
+                        print("No value found for \(playerId).")
+                    }
+                }
+            }
+        }
+
+        // Set the disconnection handler
+        userStatusRef.onDisconnectSetValue(nil)
+        print("onDisconnect handler set for \(playerId) in session \(sessionId).")
+    }
+
+//    for sessionId: String,
+//    lookingFor: LookingFor,
+//    onUpdate: @escaping (Any) -> Void,
+//    onError: @escaping (Error) -> Void
+    
+    func observeActiveParticipants(for sessionId: String, onUpdate: @escaping ([String]) -> Void) {
+        let database = Database.database().reference()
+        let participantsRef = database.child("activeParticipants/\(sessionId)")
+        
+        participantsRef.observe(.value) { snapshot in
+            var activeUsers = [String]()
+            
+            for child in snapshot.children {
+                if let childSnapshot = child as? DataSnapshot,
+                   let isActive = childSnapshot.value as? Bool,
+                   isActive {
+                    activeUsers.append(childSnapshot.key)
+                }
+            }
+            
+            onUpdate(activeUsers)
+        }
+    }
+    
+    
+    
+    
+    
+    
+//    MARK: Sync active participants with FireStore
+    
+    func syncActiveParticipantsWithFirestore(sessionId: String, activeUsers: [String]) async throws{
+        let sessionRef = multiplayerSessionCollection.document(sessionId)
+        
+        do {
+            try await sessionRef.updateData([
+                "activeParticipants": activeUsers
+            ])
+            
+            print("Participants updated in Firestore.")
+            
+        }catch { 
+            print("Error updating participants in Firestore: \(error)")
+        }
+        
+    }
 }
 

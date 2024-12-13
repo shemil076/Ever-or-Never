@@ -14,6 +14,15 @@ class GameSessionManager : ObservableObject {
     @Published var sessionID: String? = nil
     @Published var playerID: String? = nil
     
+    @Published private var multiplayerSessionManager = MultiplayerSessionManager()
+    
 
     static var shared = GameSessionManager()
+    
+    func markActive(){
+        guard let sessionID, let playerID else { return }
+        
+        multiplayerSessionManager.trackUserConnection(sessionId: sessionID, playerId: playerID)
+        
+    }
 }
