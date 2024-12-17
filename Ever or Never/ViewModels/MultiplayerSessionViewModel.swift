@@ -148,6 +148,8 @@ class MultiplayerSessionViewModel: ObservableObject {
         
         self.sessionStatus.isLoading = true
         
+        
+        
         guard let user , let userSeenQuestions = self.user?.seenQuestions else {
             print("No user logged in")
             return
@@ -159,9 +161,17 @@ class MultiplayerSessionViewModel: ObservableObject {
             self.sessionStatus.isLoading = false
         }
         do{
+            
+            var  session = try await multiplayerSessionManager.fetchSession(sessionId: sessionId)
+            
+            if session.isGameStarted {
+                self.sessionStatus.isError = true
+                self.sessionStatus.errorDescription = "Game has already started"
+                return
+            }
             let _: () = try await multiplayerSessionManager.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
             
-            let session = try await multiplayerSessionManager.fetchSession(sessionId: sessionId)
+             session = try await multiplayerSessionManager.fetchSession(sessionId: sessionId)
             
             self.currentSessionId = sessionId
             self.questions = session.questions
@@ -329,6 +339,8 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
         self.isGameStarted = multiplayerSessionManager.endQuiz(for: currentSessionId)
+        
+        
     }
     
     
@@ -441,6 +453,37 @@ class MultiplayerSessionViewModel: ObservableObject {
         
     }
     
+    func observeForActiveParticipants(){
+        guard let currentSessionId else {
+            print("No session ID available")
+            return
+        }
+        
+        multiplayerSessionManager.observeSession(
+            for: currentSessionId,
+            lookingFor: LookingFor.forActiveParticipants,
+            onUpdate: { [weak self] updatedhost in
+                guard let self else { return }
+                
+                print("prev host \(self.hostId)")
+                DispatchQueue.main.async {
+                    if let hostId = updatedhost as? String {
+                        
+                        print("New host ID: \(hostId)")
+                        self.hostId = hostId
+                    }
+                }
+                
+                print("updated host \(self.hostId)")
+            },
+            onError: { error in
+                print("Error observing session: \(error)")
+                
+            }
+        )
+    }
+    
+    
     func updateQuestionIndexes() async{
         self.sessionStatus.isLoading = true
         
@@ -483,15 +526,19 @@ class MultiplayerSessionViewModel: ObservableObject {
         for questionAnswer in self.answers {
             // Iterate through each answer in the current question
             for answer in questionAnswer.answers {
-                // Extract the player ID and the answer value
-                let playerId = answer.playerId
-                let isAnswerYes = answer.answer
-                
-                // Calculate score: Yes = 10, No = 0
-                let score = isAnswerYes ? 10 : 0
-                
-                // Update the player's score
-                playerScores[playerId, default: 0] += score
+                if activeParticipants.contains(answer.playerId) {
+                    // Extract the player ID and the answer value
+                    let playerId = answer.playerId
+                    let isAnswerYes = answer.answer
+                    
+                    // Calculate score: Yes = 10, No = 0
+                    let score = isAnswerYes ? 10 : 0
+                    
+                    // Update the player's score
+                    playerScores[playerId, default: 0] += score
+                }else{
+                    continue
+                }
             }
         }
         
@@ -515,7 +562,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         }
     }
     
-    private func resetData() {
+     func resetData() {
         currentSessionId = nil
         questions = []
         yesAnswerCount = 0
@@ -566,7 +613,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         
         print("syncing active participants..")
         do {
-            try await multiplayerSessionManager.syncActiveParticipantsWithFirestore(sessionId: currentSessionId, activeUsers: activeParticipants)
+            try await multiplayerSessionManager.syncActiveParticipantsWithFirestore(sessionId: currentSessionId, activeUsers: activeParticipants, hostId: hostId)
         }catch{
             print(error.localizedDescription)
         }

@@ -60,12 +60,13 @@ struct SinglePlayerQuizSession: Codable{
         try container.encode(self.questionCategories, forKey: .questionCategories)
         try container.encode(self.questionsAndAnswers, forKey: .questionsAndAnswers)
     }
+    
 }
 
 final class SinglePlayerSessionManager{
-    static let shared = SinglePlayerSessionManager()
+   
     
-    private init() {
+    init() {
         
     }
     

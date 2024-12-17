@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ScoreView: View {
     @StateObject var singlePlayerViwModel: SinglePlayerSessionViewModel
+    @State private var navigateToModeSelection = false
+    @State private var showSignInView: Bool = false
     var body: some View {
         ZStack{
             ViewBackground()
@@ -64,7 +66,7 @@ struct ScoreView: View {
                 
                 VStack(spacing:30){
                     Button {
-
+                        navigateToModeSelection = true
                     } label: {
                         Text("New Game")
                             .font(.headline)
@@ -74,23 +76,17 @@ struct ScoreView: View {
                             .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                             .cornerRadius(10)
                     }
-                    Button {
 
-                    } label: {
-                        Text("Quit")
-                            .font(.headline)
-                            .foregroundStyle(.black)
-                            .frame(height: 55)
-                            .frame(maxWidth: .infinity)
-                            .background(.white)
-                            .cornerRadius(10)
-                    }
                 }
                 .padding(.top, 10)
                 .padding(30)
             }
             
-            
+            NavigationLink(isActive: $navigateToModeSelection) {
+                GameModeSelectionView(showSignInView: $showSignInView)
+            } label: {
+                EmptyView()
+            }
            
            
 
@@ -108,6 +104,9 @@ struct ScoreView: View {
             Task{
                 await singlePlayerViwModel.completeGameSession()
             }
+        }
+        .onDisappear{
+            singlePlayerViwModel.resetData();
         }
         .padding(0)
         .navigationBarBackButtonHidden()

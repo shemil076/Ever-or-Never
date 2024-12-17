@@ -18,6 +18,8 @@ class SinglePlayerSessionViewModel: ObservableObject{
     @Published var answers: [QuestionAnswer] = []
     @Published var sessionStatus : SessionStatus = SessionStatus(isLoading: false, isError: false)
     
+    @Published private var singlePlayerSessionManager = SinglePlayerSessionManager();
+    
     
     @Published private(set) var user: DBUser? = nil
     
@@ -66,19 +68,19 @@ class SinglePlayerSessionViewModel: ObservableObject{
         defer{
             sessionStatus.isLoading = false
         }
-    
+        
         do{
-//            fetchRandomUniqueQuestions
+            //            fetchRandomUniqueQuestions
             
             questions = try  await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: userSeenQuestions, categoriers: categoriers, totalQuestionCount: totalQuestionCount)
-//            questions = try  await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            //            questions = try  await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
             
             try await UserHelperFunctions.updateSeenQuestions(userId: userId, userSeenQuestions: userSeenQuestions, questions: questions)
-//            let extractedQuestionIds = questions.reduce(into: [String]()){ result, item in
-//                result.append(item.id)
-//            }
-//            
-//            let _ = try await UserManager.shared.saveSeenQuestions(id: userId, seenQuestions: userSeenQuestions, newQuestions:Set(extractedQuestionIds))
+            //            let extractedQuestionIds = questions.reduce(into: [String]()){ result, item in
+            //                result.append(item.id)
+            //            }
+            //
+            //            let _ = try await UserManager.shared.saveSeenQuestions(id: userId, seenQuestions: userSeenQuestions, newQuestions:Set(extractedQuestionIds))
             setNoSessionError()
         }catch{
             setSessionError(error: error)
@@ -94,7 +96,7 @@ class SinglePlayerSessionViewModel: ObservableObject{
         
         do{
             await loadCurrentUser()
-            self.currentSessionId = try await SinglePlayerSessionManager.shared.createInitialQuizSession(userId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories)
+            self.currentSessionId = try await singlePlayerSessionManager.createInitialQuizSession(userId: user!.id, numberOfQuestions: totalQuestionCount, qustionCategories: selectedCategories)
             setNoSessionError()
         }catch{
             setSessionError(error: error)
@@ -147,12 +149,13 @@ class SinglePlayerSessionViewModel: ObservableObject{
         }
         
         do {
-            let _ = try await SinglePlayerSessionManager.shared.completeSessionByUpdatingData(
+            let _ = try await singlePlayerSessionManager.completeSessionByUpdatingData(
                 sessionId: currentSessionId,
                 score: currentScore,
                 questionsAnswers: answers
             )
             
+//            resetData();
             setNoSessionError()
         } catch {
             setSessionError(error: error)
@@ -161,4 +164,12 @@ class SinglePlayerSessionViewModel: ObservableObject{
     }
     
     
+     func resetData() {
+        currentSessionId  = nil
+        questions = []
+        yesAnswerCount = 0
+        noAnswerCount = 0
+        answers = []
+        sessionStatus  = SessionStatus(isLoading: false, isError: false)
+    }
 }

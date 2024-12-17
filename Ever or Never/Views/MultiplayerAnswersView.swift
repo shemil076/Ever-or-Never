@@ -76,7 +76,7 @@ struct MultiplayerAnswersView: View {
                                     if multiplaySessionViewModel.hostId == multiplaySessionViewModel.user?.id{
                                         Button{
                                             
-                                            if currentAnswers.count != multiplaySessionViewModel.participants.count{
+                                            if currentAnswers.count != multiplaySessionViewModel.activeParticipants.count{
                                                 showNotAllAnsweredAlert = true
                                             }else{
                                                 Task{
@@ -168,6 +168,7 @@ struct MultiplayerAnswersView: View {
                     multiplaySessionViewModel.observeSessionAnswers()
                     multiplaySessionViewModel.observeSessionForIndexesUpdate()
                     multiplaySessionViewModel.observeForParticipantsStatus()
+                    multiplaySessionViewModel.observeForActiveParticipants()
                     
                     
                 }

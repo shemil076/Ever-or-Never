@@ -116,17 +116,6 @@ struct MultiplayerScoreView: View {
                             .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                             .cornerRadius(10)
                     }
-                    Button {
-
-                    } label: {
-                        Text("Quit")
-                            .font(.headline)
-                            .foregroundStyle(.black)
-                            .frame(height: 55)
-                            .frame(maxWidth: .infinity)
-                            .background(.white)
-                            .cornerRadius(10)
-                    }
                 }
                 .padding(.top, 10)
                 .padding(20)
@@ -149,10 +138,12 @@ struct MultiplayerScoreView: View {
                 multiplaySessionViewModel.calculateScores()
                 multiplaySessionViewModel.endQuiz()
                 multiplaySessionViewModel.observeForParticipantsStatus()
+                multiplaySessionViewModel.observeForActiveParticipants()
 
             }
             .onDisappear(){
                 multiplaySessionViewModel.stopObservingSession()
+                multiplaySessionViewModel.resetData()
             }
         }
     }

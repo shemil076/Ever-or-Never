@@ -366,6 +366,18 @@ final class MultiplayerSessionManager{
                 onUpdate((currentIndex, previousQuestionIndex))
             }
             
+            if lookingFor == LookingFor.forActiveParticipants{
+                guard let snapshot = snapshot,
+                   let sessionData = snapshot.data(),
+                   let activeUsers = sessionData["activeParticipants"] as? [String],
+                    let hostId = sessionData["hostId"] as? String else{
+                    onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid session data."]))
+                    return
+                }
+                print("Active participants are updated")
+                onUpdate(hostId)
+            }
+            
         }
     }
     
@@ -536,12 +548,20 @@ final class MultiplayerSessionManager{
     
 //    MARK: Sync active participants with FireStore
     
-    func syncActiveParticipantsWithFirestore(sessionId: String, activeUsers: [String]) async throws{
+    func syncActiveParticipantsWithFirestore(sessionId: String, activeUsers: [String], hostId: String) async throws{
         let sessionRef = multiplayerSessionCollection.document(sessionId)
         
         do {
+            var newHostId = hostId
+            if activeUsers.count > 0 {
+                if !activeUsers.contains(hostId){
+                    newHostId = activeUsers[0]
+                }
+            }
+            
             try await sessionRef.updateData([
-                "activeParticipants": activeUsers
+                "activeParticipants": activeUsers,
+                "hostId" : newHostId
             ])
             
             print("Participants updated in Firestore.")

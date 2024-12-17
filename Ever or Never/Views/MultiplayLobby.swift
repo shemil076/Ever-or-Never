@@ -141,6 +141,7 @@ struct MultiplayLobby: View {
                     multiplaySessionViewModel.observeParticipants(for: sessionId)
                     multiplaySessionViewModel.observeSessionStates()
                     multiplaySessionViewModel.observeForParticipantsStatus()
+                    multiplaySessionViewModel.observeForActiveParticipants()
     
                 }
             }
