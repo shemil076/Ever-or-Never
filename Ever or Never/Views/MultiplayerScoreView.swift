@@ -14,12 +14,13 @@ struct MultiplayerScoreView: View {
     @State private var showAlert : Bool = false
     var body: some View {
         ZStack{
-            Spacer()
             ViewBackground()
             VStack{
+                Spacer()
                 HStack{
                     Text("Scoreboard")
                         .font(.largeTitle)
+                        .foregroundStyle(Color.white)
                     Spacer()
                 }
                 .padding(20)
@@ -41,9 +42,15 @@ struct MultiplayerScoreView: View {
                         .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .cornerRadius(15)
+
                         
+                ).overlay(
+                    RoundedRectangle(cornerRadius: 15)
+                        .stroke(Color.gray, lineWidth: 1)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
                 )
-               
+                .padding(.bottom, 10)
                 .padding(20)
                 
                 ForEach(Array(multiplaySessionViewModel.score.sorted(by: { $0.value > $1.value }).enumerated()), id: \.element.key) { index, element in
@@ -56,24 +63,30 @@ struct MultiplayerScoreView: View {
                     HStack {
                         // Display rank
                         Text("#\(rank)")
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                             .padding(.leading, 30)
 
                         Spacer()
 
                         // Display user display name
                         Text(userDisplayName)
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
 
                         Spacer()
 
                         // Display score
                         Text("\(score)")
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                             .padding(.trailing, 30)
                     }
                     .frame(height: 60) // Frame for HStack
-                    .background(Color(red: 183 / 255, green: 207 / 255, blue: 241 / 255))
+                    .background(Color(red: 28 / 255, green: 41 / 255, blue: 56 / 255))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.gray, lineWidth: 1)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                    )
                     .cornerRadius(15)
                     .padding(.horizontal,20) // Optional padding for spacing
                     .overlay{
@@ -127,6 +140,7 @@ struct MultiplayerScoreView: View {
                     EmptyView()
                 }
 
+                Spacer()
             }
 //            .alert(isPresented: )
             

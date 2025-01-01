@@ -166,4 +166,13 @@ final class UserManager {
         try await userDocument(id: id).updateData(data)
             
     }
+    
+    func resetSeenQuestions(id: String) async throws{
+        
+        let data: [String: Any] = [
+            "seenQuestions": []
+        ]
+        
+        try await userDocument(id: id).updateData(data)
+    }
 }

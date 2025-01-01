@@ -25,22 +25,45 @@ struct MultiplayerOptionView: View {
             VStack(alignment:.leading, spacing: 50){
                 Text("Multiplayer")
                     .font(.largeTitle)
+                    .foregroundColor(.white)
                 
                 
+//                VStack(alignment: .leading, spacing: 4) {
+//                    Text("Join Now")
+//                        .font(.caption)
+//                        .foregroundColor(.white)
+//                    
+//                    TextField("Enter the code", text: $sessionIdInput)
+//                        .padding()
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 8)
+//                                .stroke(Color.gray, lineWidth: 1)
+//                        )
+//                        .font(.body)
+//                        .foregroundColor(.white)
+//                }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Join Now")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.white)
                     
-                    TextField("Enter the code", text: $sessionIdInput)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                        .font(.body)
+                    ZStack(alignment: .leading) {
+                        if sessionIdInput.isEmpty {
+                            Text("Enter the code")
+                                .foregroundColor(.gray) // Set placeholder text color
+                                .padding(.leading, 12)   // Match padding inside the TextField
+                        }
+                        
+                        TextField("", text: $sessionIdInput)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .font(.body)
+                            .foregroundColor(.white)
+                    }
                 }
-                
                 Button {
                     if sessionIdInput == ""{
                         isSessionIdEmpty = true
@@ -104,7 +127,9 @@ struct MultiplayerOptionView: View {
                 HStack{
                     VStack{
                         Divider()
-                            .font(.headline)
+                            
+                            .frame(height: 1)
+                                    .background(Color.gray)
                     }
                     .padding()
                     
@@ -114,13 +139,16 @@ struct MultiplayerOptionView: View {
                     
                     VStack{
                         Divider()
-                            .font(.headline)
+                            .frame(height: 1) 
+                                    .background(Color.gray)
                     }
                     .padding()
                 }
                 
                 Text("Create a New Session")
                     .font(.title)
+                    .foregroundColor(.white)
+                    .fontWeight(.semibold)
                 
                 NavigationLink(destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(true))){
                     //                    Text("Multiplayer")
@@ -131,21 +159,19 @@ struct MultiplayerOptionView: View {
                     //                        .foregroundColor(.white)
                     //                        .cornerRadius(10)
                     
-                    VStack{
+                    VStack(alignment: .center){
                         ZStack{
-                            HStack{
-                                Spacer()
-                                Image("Vector")
-                                    .padding(.leading, UIScreen.main.bounds.width * 0.6)
-                            }
+
                             HStack{
                                 VStack(alignment: .leading){
                                     Text("New Game")
                                         .font(.title)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.white)
+
                                     
-                                }.padding()
+                                }
+//                                .padding(.trailing, 30)
                                     .frame(width: UIScreen.main.bounds.width * 0.7)
                                 
                                 Image(systemName: "arrow.up.forward")
@@ -156,19 +182,23 @@ struct MultiplayerOptionView: View {
                                             .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
                                             .cornerRadius(50)
                                     )
-                                    .padding(.top, 40)
+//                                    .padding(.top, 20)
                             }
                             
                         }.background(
                             Rectangle()
-                                .fill(Color(red: 103/255, green: 134/255, blue: 236/255))
+                                .fill(Color.white.opacity(0.2))
                                 .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.13)
                                 .cornerRadius(15)
                         )
                         
+                        .padding(.leading, UIScreen.main.bounds.width * 0.08)
+                        
                     }
                     
-                }.disabled(isJoinDisabled)
+                }
+                
+                .disabled(isJoinDisabled)
                 
                 //                VStack{
                 //                    HStack{

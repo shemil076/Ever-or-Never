@@ -18,38 +18,56 @@ struct GameSessionView: View {
             
             ZStack{
                 Rectangle()
-                    .fill(Color(red: 187 / 255.0, green: 209 / 255.0, blue: 243 / 255.0))
-                    .frame(width: UIScreen.main.bounds.width / 1.37, height: UIScreen.main.bounds.height / 1.5)
+                    .fill(Color(red: 28/255, green: 41/255, blue: 56/255))
+                    .frame(width: UIScreen.main.bounds.width / 1.2, height: UIScreen.main.bounds.height / 1.4)
                     .cornerRadius(20)
                     .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 5)
-                    .offset(y: 20)
-                Rectangle()
-                    .fill(Color(red: 212 / 255.0, green: 227 / 255.0, blue: 249 / 255.0))
-                    .frame(width: UIScreen.main.bounds.width / 1.27, height: UIScreen.main.bounds.height / 1.5)
-                    .cornerRadius(20)
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 5)
-                    .offset(y: 10)
-                Rectangle()
-                    .fill(.white)
-                    .frame(width: UIScreen.main.bounds.width / 1.2, height: UIScreen.main.bounds.height / 1.5)
-                    .cornerRadius(20)
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 5)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color(red: 42 / 255, green: 54 / 255, blue: 68 / 255), lineWidth: 1)
+                            .frame(width: UIScreen.main.bounds.width / 1.2, height: UIScreen.main.bounds.height / 1.4)
+                    )
                 
                 VStack(spacing: 50) {
-                    HStack{
-                        Text("Select an answer")
-                            .multilineTextAlignment(.leading)
-                            .foregroundColor(.gray)
-                            .fontWeight(.semibold)
-                        Spacer()
-                    }
-                    .padding(20)
+                    
                     
                     
                     if !singlePlayerViwModel.questions.isEmpty && currentQuestionIndex < singlePlayerViwModel.questions.count {
+                        
+                        let progress = CGFloat(currentQuestionIndex + 1) / CGFloat(singlePlayerViwModel.questions.count)
+                        
+                        
+                        HStack(alignment:.center){
+                            ZStack(alignment: .leading) {
+                                Rectangle()
+                                    .frame( height: 10)
+                                    .cornerRadius(10)
+                                    .foregroundColor(Color.gray.opacity(0.3))
+                                
+                                Rectangle()
+                                    .frame(width: progress * UIScreen.main.bounds.width / 2, height: 10)
+                                    .cornerRadius(10)
+                                    .foregroundColor(.blue)
+                                    .animation(.easeInOut, value: progress)
+                            }
+                            .frame(width: UIScreen.main.bounds.width / 2)
+                                                        
+                            Text(" \(currentQuestionIndex + 1) / \(singlePlayerViwModel.questions.count) ")
+                                .foregroundStyle(.white)
+                        }
+                        HStack{
+                            Text("Select an answer")
+                                .multilineTextAlignment(.leading)
+                                .foregroundColor(.gray)
+                                .fontWeight(.semibold)
+                            Spacer()
+                        }
+                        .padding(.horizontal,10)
+                        
                         Text(singlePlayerViwModel.questions[currentQuestionIndex].question)
                             .multilineTextAlignment(.leading)
                             .font(.title)
+                            .foregroundColor(.white)
                         
                         VStack(spacing:20){
                             
@@ -82,24 +100,7 @@ struct GameSessionView: View {
                             }
 
                             
-//                            Button("YES") {
-//                                if currentQuestionIndex < (singlePlayerViwModel.questions.count ) {
-//                                    
-//                                   
-//                                    
-//                                    singlePlayerViwModel.submitAnswer(questionId: singlePlayerViwModel.questions[currentQuestionIndex].question, answer: true)
-//                                    
-//                                    currentQuestionIndex += 1
-//                                    
-//                                } else {
-//                                    // End of quiz logic
-//                                   
-//                                    
-//                                }
-//                                
-//                    
-//                            }
-                            
+
                             Button  {
                                 if currentQuestionIndex < (singlePlayerViwModel.questions.count) {
                                     
@@ -114,41 +115,27 @@ struct GameSessionView: View {
                             } label: {
                                 Text("NO")
                                     .font(.headline)
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(.white)
                                     .frame(height: 60)
                                     .frame(maxWidth: .infinity)
-                                    .background(Color(red: 237 / 255.0, green: 239 / 255.0, blue: 240 / 255.0))
+                                    .background(Color(red: 28/255, green: 41/255, blue: 56/255))
                                     .cornerRadius(20)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 15)
+                                            .stroke(Color.gray, lineWidth: 1)
+                                            .frame(height: 60)
+                                            .frame(maxWidth: .infinity)
+                                    )
                             }
 
-                            
-//                            Button("NO") {
-//                                if currentQuestionIndex < (singlePlayerViwModel.questions.count) {
-//                                    
-//                                    
-//                                    singlePlayerViwModel.submitAnswer(questionId: singlePlayerViwModel.questions[currentQuestionIndex].question, answer: false)
-//                                    
-//                                    currentQuestionIndex += 1
-//                                } else {
-//                                    // End of quiz logic
-//                                }
-//                            }
+
                         }
                         .padding(20)
                         
                         Text("\(currentQuestionIndex + 1) of \(singlePlayerViwModel.questions.count) Questions")
                             .foregroundColor(.gray)
                     }
-                        
-//                    else{
-//
-//                        EmptyView()
-//                            .onAppear{
-//                                navigateToScoreView = true
-//                            }
-//                        ScoreView(singlePlayerViwModel: singlePlayerViwModel)
-//
-//                    }
+
                 }
                 .padding(20)
             }

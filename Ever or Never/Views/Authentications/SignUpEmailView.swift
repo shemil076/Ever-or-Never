@@ -36,6 +36,7 @@ struct SignUpEmailView: View {
         ZStack{
             ViewBackground()
             
+//            DualCircles()
             
             VStack(alignment: .leading, spacing: 20){
                 

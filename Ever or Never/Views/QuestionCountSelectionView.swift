@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct QuestionCountSelectionView: View {
+//    @Environment(\.presentationMode) var presentationMode
+//    @Environment(\.dismiss) private var dismiss
+    
     @State private var selectedQuestionCount = 0
     @Binding var isMultiplePlayerMode : Bool
     @State private var isButtonClicked = false
@@ -26,47 +29,55 @@ struct QuestionCountSelectionView: View {
         ZStack{
             ViewBackground()
             
-            VStack(alignment: .leading,spacing: 20){
+            
+            VStack(alignment: .leading, spacing: UIScreen.main.bounds.height / 12){
                 Spacer()
-                Text("Question Count")
-                    .font(.title)
-                    .padding()
-                
-                //            Picker("Question count", selection: $selectedQuestionCount){
-                //                ForEach(1...20, id: \.self){ count in
-                //                    Text("\(count)")
-                //                }
-                //            }.pickerStyle(.wheel)
-                //                .padding()
-                
-                VStack(spacing: 20){
-                    ForEach($buttons) { $buttonAttributes in
-                        Button {
-                            self.selectedQuestionCount = buttonAttributes.associatedValue.rawValue
-                            buttonAttributes.isButtonClicked.toggle()
-                            
-                            if !buttonAttributes.isButtonClicked {
-                                self.selectedQuestionCount = 0
-                            }
-                            
-                            for button in buttons.indices {
-                                if buttons[button].associatedValue.rawValue != buttonAttributes.associatedValue.rawValue {
-                                    buttons[button].isButtonClicked = false
+                HStack(alignment: .center){
+                    VStack(alignment: .leading){
+                        Text("Question Count")
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .fontWeight(.semibold)
+                            .padding()
+                        
+                        //            Picker("Question count", selection: $selectedQuestionCount){
+                        //                ForEach(1...20, id: \.self){ count in
+                        //                    Text("\(count)")
+                        //                }
+                        //            }.pickerStyle(.wheel)
+                        //                .padding()
+                        
+                        VStack(spacing: 20){
+                            ForEach($buttons) { $buttonAttributes in
+                                Button {
+                                    self.selectedQuestionCount = buttonAttributes.associatedValue.rawValue
+                                    buttonAttributes.isButtonClicked.toggle()
+                                    
+                                    if !buttonAttributes.isButtonClicked {
+                                        self.selectedQuestionCount = 0
+                                    }
+                                    
+                                    for button in buttons.indices {
+                                        if buttons[button].associatedValue.rawValue != buttonAttributes.associatedValue.rawValue {
+                                            buttons[button].isButtonClicked = false
+                                        }
+                                    }
+                                } label: {
+                                    Text("\(buttonAttributes.associatedValue.rawValue)")
+                                        .padding()
+                                        .frame(width: UIScreen.main.bounds .width * 0.8)
+                                        .background(buttonAttributes.isButtonClicked ? Color(red: 103/255, green: 134/255, blue: 236/255) : Color(red: 30/255, green: 47/255, blue: 75/255))
+                                        .foregroundColor( .white )
+                                        .cornerRadius(10)
                                 }
                             }
-                        } label: {
-                            Text("\(buttonAttributes.associatedValue.rawValue)")
-                                .padding()
-                                .frame(width: UIScreen.main.bounds .width * 0.8)
-                                .background(buttonAttributes.isButtonClicked ? Color(red: 103/255, green: 134/255, blue: 236/255) : Color(red: 185/255, green: 203/255, blue: 236/246))
-                                .foregroundColor(buttonAttributes.isButtonClicked ? .white : .black)
-                                .cornerRadius(20)
                         }
+                        .padding(.bottom, UIScreen.main.bounds.height / 6)
+        //                Spacer()
                     }
                 }
-                Spacer()
                 
-                
+
                 Button {
                     if selectedQuestionCount <= 0 {
                         isShowAlert = true
@@ -78,9 +89,9 @@ struct QuestionCountSelectionView: View {
                         .frame(width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.width * 0.13)
                         .background(Color(red: 78 / 255, green: 130 / 255, blue: 209 / 255))
                         .foregroundColor(.white)
-                        .cornerRadius(20)
+                        .cornerRadius(10)
                 }
-                .padding(.top, 50)
+                .padding(.bottom, UIScreen.main.bounds.height / 25)
                 .alert(isPresented: $isShowAlert) {
                     Alert(
                         title: Text("Question count not selected"),
@@ -90,21 +101,49 @@ struct QuestionCountSelectionView: View {
                         })
                     )
                 }
-                Spacer()
-            
+//                Spacer()
+                
                 
                 NavigationLink(isActive: $isNavigateToCategoryView) {
                     CategorySelectionView(selectedQuestionCount: $selectedQuestionCount, isMultiplePlayerMode: $isMultiplePlayerMode)
                 } label: {
                     EmptyView()
-                }.padding(.top, 50)
-                Spacer()
+                }
+//                .padding(.top, 50)
             }
             
         }
-//        .onAppear {
-//            selectedQuestionCount = 0
-//        }
+    
+//        .navigationBarBackButtonHidden(true)
+//            .toolbar{
+//                ToolbarItem(placement: .navigationBarLeading) {
+//                    Button {
+////                        presentationMode.wrappedValue.dismiss()
+//                        dismiss()
+//                    } label: {
+//                        HStack {
+//                            Image(systemName: "arrow.backward")
+//                                .foregroundColor(.white)
+//                                .background(
+//                                    Circle()
+//                                        .fill(Color(red: 28/255, green: 41/255, blue: 56/255))
+//                                        .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
+//                                        .overlay(content: {
+//                                            Circle()
+//                                                .stroke(Color.gray, lineWidth: 2)
+//                                        })
+//                                )
+//                        }
+//                    }
+//                    
+//                }
+//            }
+        
+        
+        
+        //        .onAppear {
+        //            selectedQuestionCount = 0
+        //        }
         //        .ignoresSafeArea()
     }
 }

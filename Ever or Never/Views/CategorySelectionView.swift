@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct CategorySelectionView: View {
-    //    @EnvironmentObject var multiPlayerSessionViewModel : MultiplayerSessionViewModel
-    //    @StateObject private var multiPlayerSessionViewModel = MultiplayerSessionViewModel()
+
     @Binding var selectedQuestionCount : Int
     @State private var selectedCategories: [QuestionCategory] = []
     @State private var availableCategories: [QuestionCategory] = QuestionCategory.allCases
@@ -21,58 +20,28 @@ struct CategorySelectionView: View {
     @State private var alwaysFalse: Bool = false
     @State private var isGameSessionReady = false
     @State private var isContinueDisabled: Bool = false
-
+    
     
     private let adaptiveColumn = [
         GridItem(.adaptive(minimum: 150))
     ]
     var body: some View {
         ZStack{
+            ViewBackground()
             
-            LinearGradient(
-                gradient: Gradient(stops: [
-                    .init(color: Color.white, location: 0.0),
-                    .init(color: Color.blue.opacity(0.3), location: 1.0)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-            
-            
-            VStack{
-                Spacer()
+            //
+            VStack(){
                 HStack{
-                    Image("bg-girl")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: UIScreen.main.bounds.width / 1.8)
+                    Text("Category Selection")
+                        .font(.title)
+                        .foregroundStyle(.white)
+                        .fontWeight(.semibold)
+                        .padding()
+                    
                     Spacer()
                 }
-            }
-            
-//            if singleGameSessionViewModel.sessionStatus.isLoading ?? false{
-//                ProgressView()
-//            }
-//            
-            VStack(spacing: 10){
-                Text("Category Selection")
-                    .font(.title)
-                    .padding()
+//                .padding(.top , UIScreen.main.bounds.height / 10)
                 ScrollView{
-                    
-                    
-                    //                List(availableCategories, id: \.self){ category in
-                    //                    MultipleSelectionRow(category: category, isSelected: selectedCategories.contains(category)){
-                    //                        if selectedCategories.contains(category){
-                    //                            selectedCategories.removeAll{$0 == category}
-                    //                        }else{
-                    //                            selectedCategories.append(category)
-                    //                        }
-                    //                    }
-                    //
-                    //                }
-                    
                     LazyVGrid(columns: adaptiveColumn, spacing: 30){
                         ForEach(availableCategories, id: \.self){ category in
                             MultipleSelectionRow(category: category, isSelected: selectedCategories.contains(category)){
@@ -84,30 +53,11 @@ struct CategorySelectionView: View {
                             }
                             
                         }
-                    }.padding(.horizontal, UIScreen.main.bounds.width / 15 )
+                    }
+                    .padding(.horizontal, UIScreen.main.bounds.width / 15 )
                         .padding(.vertical,30)
-                    
-                    
-                    //                LazyVGrid(columns : adaptiveColumn, spacing:20 ){
-                    //                    ForEach(multiplaySessionViewModel.participants, id: \.self){participant in
-                    //                        VStack(alignment: .leading) {
-                    //                            Text(participant.displayName)
-                    //                                .font(.headline)
-                    //                        }.background(
-                    //                            Rectangle()
-                    //                                .fill(Color(red: 185/255, green: 203/255, blue: 236/246))
-                    //                                .frame(width: UIScreen.main.bounds .width * 0.4 , height: UIScreen.main.bounds.height * 0.07)
-                    //                                .cornerRadius(15)
-                    //                        )
-                    //                        .padding()
-                    //
-                    //
-                    //                    }
-                    //                }
-                    
-                    
-                    
-                }
+
+                }.frame(height: UIScreen.main.bounds.height / 1.5)
                 
                 Button {
                     
@@ -146,42 +96,33 @@ struct CategorySelectionView: View {
                     
                 }.disabled(isContinueDisabled)
                 
-                .padding(.horizontal, 20)
-//                .alert(isPresented: $isShowAlert) {
-//                    Alert(
-//                        title: Text("Category not selected!"),
-//                        message: Text("Please select at least one category."),
-//                        dismissButton: .default(Text("OK"), action: {
-//                            isShowAlert = false
-//                        })
-//                    )
-//                }
-                .alert(isPresented: Binding(get: {
-                    isShowAlert || (singleGameSessionViewModel.sessionStatus.isError)
-                }, set: { newValue in
-                    if !newValue {
-                        isShowAlert = false
-                        singleGameSessionViewModel.sessionStatus.isError = false
+                    .padding(.horizontal, 20)
+                
+                    .alert(isPresented: Binding(get: {
+                        isShowAlert || (singleGameSessionViewModel.sessionStatus.isError)
+                    }, set: { newValue in
+                        if !newValue {
+                            isShowAlert = false
+                            singleGameSessionViewModel.sessionStatus.isError = false
+                        }
+                    })) {
+                        if isShowAlert {
+                            return Alert(
+                                title: Text("Category not selected!"),
+                                message: Text("Please select at least one category."),
+                                dismissButton: .default(Text("OK"), action: {
+                                    isShowAlert = false
+                                })
+                            )
+                        } else {
+                            return Alert(
+                                title: Text("Something went wrong"),
+                                message: Text(singleGameSessionViewModel.sessionStatus.errorDescription ?? "Error occurred"),
+                                dismissButton: .default(Text("OK"))
+                            )
+                        }
                     }
-                })) {
-                    if isShowAlert {
-                        return Alert(
-                            title: Text("Category not selected!"),
-                            message: Text("Please select at least one category."),
-                            dismissButton: .default(Text("OK"), action: {
-                                isShowAlert = false
-                            })
-                        )
-                    } else {
-                        return Alert(
-                            title: Text("Something went wrong"),
-                            message: Text(singleGameSessionViewModel.sessionStatus.errorDescription ?? "Error occurred"),
-                            dismissButton: .default(Text("OK"))
-                        )
-                    }
-                }
-
-                //            .disabled(isGameSessionReady == false)
+                
                 
                 
                 if !isMultiplePlayerMode{
@@ -200,19 +141,12 @@ struct CategorySelectionView: View {
                     }
                 }
             }
-//            .alert(isPresented: $singleGameSessionViewModel.sessionStatus.isError){
-//                Alert(
-//                    title: Text("Something went wrong"),
-//                    message: Text(singleGameSessionViewModel.sessionStatus.errorDescription ?? "Error occurred"),
-//                    dismissButton: .default(Text("OK"))
-//                )
-//            }
+            
         }
-
+        
         .onAppear{
             isContinueDisabled = false
         }
-//                .ignoresSafeArea()
     }
     
     
@@ -220,7 +154,7 @@ struct CategorySelectionView: View {
     func initializeGameSession(isMultiplePlayerMode : Bool) async {
         if !isMultiplePlayerMode{
             await singleGameSessionViewModel.initializeGameSession(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
-            await singleGameSessionViewModel.loadQuestions(categoriers: selectedCategories, totalQuestionCount: selectedQuestionCount)
+            await singleGameSessionViewModel.loadQuestions(categories: selectedCategories, totalQuestionCount: selectedQuestionCount)
         }else{
             
             try await MultiplayerSessionViewModel.shared.initializeMultiplayerGameSessions(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
@@ -239,35 +173,24 @@ struct MultipleSelectionRow : View {
     var action:() -> Void
     
     var body: some View {
-        //        Button(action : action){
-        //            ZStack{
-        //                Text(category.rawValue)
-        //                    .foregroundColor(isSelected ? .white : .black)
-        //            }
-        //            .background(
-        //                Rectangle()
-        //                    .fill(isSelected ?Color(red: 103/255, green: 134/255, blue: 236/255) : Color(red: 185/255, green: 203/255, blue: 236/246))
-        //                    .frame(width: UIScreen.main.bounds.width * 0.4 ,height:   UIScreen.main.bounds.height / 15)
-        //                    .cornerRadius(15)
-        //            )
-        //        }.padding(.horizontal, 40)
-        //            .padding(.vertical, 10)
+        
         
         Button {
             action()
         } label: {
-//            ZStack{
-                Text(category.rawValue)
-                    .foregroundColor(isSelected ? .white : .black)
-                    .background(
-                        Rectangle()
-                            .fill(isSelected ?Color(red: 103/255, green: 134/255, blue: 236/255) : Color(red: 185/255, green: 203/255, blue: 236/246))
-                            .frame(width: UIScreen.main.bounds.width * 0.4 ,height:   UIScreen.main.bounds.height / 15)
-                            .cornerRadius(15)
-                    )
-//            }
+            //            ZStack{
+            Text(category.rawValue)
+                .foregroundColor(.white )
+                .background(
+                    Rectangle()
+                        .fill(isSelected ?Color(red: 103/255, green: 134/255, blue: 236/255) : Color(red: 30/255, green: 47/255, blue: 75/255))
+                        .frame(width: UIScreen.main.bounds.width * 0.4 ,height:   UIScreen.main.bounds.height / 15)
+                        .cornerRadius(15)
+                )
+            //            }
             
-        }.padding(.horizontal, 40)
+        }
+        .padding(.horizontal, 40)
             .padding(.vertical, 10)
         
     }

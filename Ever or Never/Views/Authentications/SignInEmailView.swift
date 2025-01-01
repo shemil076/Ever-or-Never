@@ -33,13 +33,13 @@ struct SignInEmailView: View {
             
             ViewBackground()
             
+
             
             VStack{
-                
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.white)
                     
                     TextField("Enter the display name", text: $viewModel.email)
                         .padding()
@@ -48,6 +48,7 @@ struct SignInEmailView: View {
                                 .stroke(Color.gray, lineWidth: 1)
                         )
                         .font(.body)
+                        .foregroundColor(.white)
                 }
 
 //                TextField("Email...", text: $viewModel.email)
@@ -58,7 +59,8 @@ struct SignInEmailView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Password")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.white)
+                        .foregroundColor(.white)
                     
                     SecureField("Password", text: $viewModel.password)
                         .padding()
@@ -67,6 +69,7 @@ struct SignInEmailView: View {
                                 .stroke(Color.gray, lineWidth: 1)
                         )
                         .font(.body)
+                        .foregroundColor(.white)
                 }
 //
 //                SecureField("Password...", text: $viewModel.password)
@@ -103,7 +106,7 @@ struct SignInEmailView: View {
                 }
             }
             .padding()
-        }
+            }
 //        .ignoresSafeArea()
     }
 }

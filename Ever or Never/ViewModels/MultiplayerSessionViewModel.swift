@@ -72,8 +72,8 @@ class MultiplayerSessionViewModel: ObservableObject {
     
     
     
-    func loadQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async {
-        guard let userId = self.user?.id, let userSeenQuestions = self.user?.seenQuestions else {
+    func loadQuestions(categories: [QuestionCategory], totalQuestionCount: Int) async {
+        guard let userId = self.user?.id, var userSeenQuestions = self.user?.seenQuestions else {
             print("No session ID available")
             return
         }
@@ -87,7 +87,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         do{
             //            questions = try await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
             
-            questions = try await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: userSeenQuestions, categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            questions = try await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: &userSeenQuestions, categories: categories, totalQuestionCount: totalQuestionCount, userId: userId)
             
             
             try await UserHelperFunctions.updateSeenQuestions(userId: userId, userSeenQuestions: userSeenQuestions, questions: questions)
@@ -106,7 +106,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         
         print("running this")
         try await loadCurrentUser()
-        await loadQuestions(categoriers:selectedCategories, totalQuestionCount: totalQuestionCount)
+        await loadQuestions(categories:selectedCategories, totalQuestionCount: totalQuestionCount)
         print(questions.count)
         
         defer{

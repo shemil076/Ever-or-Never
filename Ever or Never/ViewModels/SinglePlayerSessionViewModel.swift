@@ -57,8 +57,8 @@ class SinglePlayerSessionViewModel: ObservableObject{
     
     
     
-    func loadQuestions(categoriers: [QuestionCategory], totalQuestionCount: Int) async {
-        guard let userId = self.user?.id, let userSeenQuestions = self.user?.seenQuestions else {
+    func loadQuestions(categories: [QuestionCategory], totalQuestionCount: Int) async {
+        guard let userId = self.user?.id, var userSeenQuestions = self.user?.seenQuestions else {
             print("No user id available")
             return
         }
@@ -72,7 +72,7 @@ class SinglePlayerSessionViewModel: ObservableObject{
         do{
             //            fetchRandomUniqueQuestions
             
-            questions = try  await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: userSeenQuestions, categoriers: categoriers, totalQuestionCount: totalQuestionCount)
+            questions = try  await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: &userSeenQuestions, categories: categories, totalQuestionCount: totalQuestionCount, userId: userId)
             //            questions = try  await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
             
             try await UserHelperFunctions.updateSeenQuestions(userId: userId, userSeenQuestions: userSeenQuestions, questions: questions)

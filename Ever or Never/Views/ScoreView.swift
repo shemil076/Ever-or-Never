@@ -14,72 +14,72 @@ struct ScoreView: View {
     var body: some View {
         ZStack{
             ViewBackground()
-            Image("Ellipse")
+            Image("Ellipse-min")
                 .resizable()
                 .scaledToFit()
             
-            VStack{
-                Spacer()
-                HStack{
-                    Text("Scoreboard")
-                        .font(.title)
-                    Spacer()
-                }
-                .padding(20)
-                
-                ZStack{
-                    VStack{
+            ZStack{
+                VStack{
+                    HStack{
+                        Text("Scoreboard")
+                            .font(.title)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        Spacer()
+                    }
+                    .padding(.top, 50)
+                    .padding(.horizontal, 20)
+                    
+                    ZStack{
+                        
                         Image("Success")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: UIScreen.main.bounds.width / 3)
+                            .frame(width: UIScreen.main.bounds.width / 2)
                             .padding(20)
                         
-                        Text("Your Final Score")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                            .fontWeight(.bold)
-                        
-                        HStack{
-                            Text("\(singlePlayerViwModel.yesAnswerCount)")
-                                .font(.custom("", size: 65))
-                                .fontWeight(.bold)
-                                .foregroundColor(.black)
+                       
+                        VStack{
                             
-                            Text("/ \(singlePlayerViwModel.questions.count * 10)")
-                                .font(.title)
+                            Text("Your Final Score")
+                                .font(.subheadline)
                                 .foregroundColor(.gray)
-                        }
-                        .padding(.bottom, 20)
-                        .padding(.horizontal, 20)
-                    }
-                }
-                .background(
-                    Rectangle()
-                                        .fill(.white)
-                                        .frame(width: UIScreen.main.bounds.width / 1.2)
-                                        .cornerRadius(20)
-                                        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 5)
-                )
-                
-                Spacer()
-                
-                VStack(spacing:30){
-                    Button {
-                        navigateToModeSelection = true
-                    } label: {
-                        Text("New Game")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(height: 55)
-                            .frame(maxWidth: .infinity)
-                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                            .cornerRadius(10)
+                                .fontWeight(.bold)
+                                .padding(.top, 20)
+                            
+                            HStack{
+                                Text("\(singlePlayerViwModel.yesAnswerCount)")
+                                    .font(.custom("", size: 65))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                
+                                Text("/ \(singlePlayerViwModel.questions.count * 10)")
+                                    .font(.title)
+                                    .foregroundColor(.gray)
+                            }
+                            
+                            
+                        }.padding(.top, UIScreen.main.bounds.height / 3)
                     }
 
+                    
+                    VStack(spacing:30){
+                        Button {
+                            navigateToModeSelection = true
+                        } label: {
+                            Text("New Game")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(height: 55)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                                .cornerRadius(10)
+                        }
+
+                    }
+                    .padding(.top, 20)
+                    .padding(30)
                 }
-                .padding(.top, 10)
-                .padding(30)
             }
             
             NavigationLink(isActive: $navigateToModeSelection) {
@@ -88,8 +88,7 @@ struct ScoreView: View {
                 EmptyView()
             }
            
-           
-
+        
         }
         .alert(isPresented: $singlePlayerViwModel.sessionStatus.isError){
             Alert(

@@ -14,19 +14,23 @@ struct GameModeSelectionView: View {
 
             ZStack{
                 ViewBackground()
-                VStack(alignment: .leading, spacing : 20){
-                    Text("Select the Mode")
-                        .font(.largeTitle)
-                        .padding(.leading)
-                        .padding()
+                VStack(alignment: .center, spacing : UIScreen.main.bounds.height * 0.1){
+                    HStack(alignment: .firstTextBaseline){
+                        Text("Select the Mode")
+                            .foregroundColor(.white)
+                            .font(.largeTitle)
+                            .padding()
+
+                        
+                        Spacer()
+                    }
                     
                     NavigationLink(destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(false))){
                         VStack{
                             ZStack{
                                 HStack{
                                     Spacer()
-                                    Image("Vector")
-                                        .padding(.leading, UIScreen.main.bounds.width * 0.6)
+                                
                                 }
                                 HStack{
                                     VStack(alignment: .leading){
@@ -53,7 +57,8 @@ struct GameModeSelectionView: View {
                                     
                             }.background(
                                 Rectangle()
-                                    .fill(Color(red: 103/255, green: 134/255, blue: 236/255))
+//                                    .fill(Color(red: 103/255, green: 134/255, blue: 236/255))
+                                    .fill(Color.white.opacity(0.2))
                                     .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.16)
                                     .cornerRadius(15)
                             )
@@ -68,8 +73,7 @@ struct GameModeSelectionView: View {
                             ZStack{
                                 HStack{
                                     Spacer()
-                                    Image("Vector")
-                                        .padding(.leading, UIScreen.main.bounds.width * 0.6)
+                                    
                                 }
                                 HStack{
                                     VStack(alignment: .leading){
@@ -96,7 +100,8 @@ struct GameModeSelectionView: View {
                                     
                             }.background(
                                 Rectangle()
-                                    .fill(Color(red: 78/255, green: 130/255, blue: 209/255))
+//                                    .fill(Color(red: 78/255, green: 130/255, blue: 209/255))
+                                    .fill(Color.white.opacity(0.2))
                                     .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.16)
                                     .cornerRadius(15)
                             )

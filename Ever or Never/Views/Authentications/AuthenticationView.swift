@@ -16,8 +16,10 @@ struct AuthenticationView: View {
             // Add a Linear Gradient background
             LinearGradient(
                 gradient: Gradient(stops: [
-                    .init(color: Color.white, location: 0.0),   // Blue starts at the top
-                    .init(color: Color.blue.opacity(0.3), location: 1.0) // Purple starts lower (60% of the view height)
+                    .init(color: Color(red: 16 / 255.0, green: 36 / 255.0, blue: 58 / 255.0), location: 0.0),
+                    
+                    
+                    .init(color: Color(red: 10 / 255.0, green: 23 / 255.0, blue: 37 / 255.0), location: 1.0) // Purple starts lower (60% of the view height)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
@@ -26,36 +28,27 @@ struct AuthenticationView: View {
             
             
             VStack {
-                VStack{
-                    HStack{
-                        Image("emoji-orange")
-                        Spacer()
-                        Image("emoji-green")
-
-
-                    }
+                ZStack{
+                    Image("Ellipse-min")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: UIScreen.main.bounds.width)
                     
-                    HStack{
-                        Image("emoji-blue")
-                        Spacer()
-
-                        Image("emoji-yellow")
-
-
-            
-                    }
-//                    .frame(height:  UIScreen.main.bounds.height / 4 )
+                    Image("group-logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: UIScreen.main.bounds.width)
+                        .padding(.top, UIScreen.main.bounds.height/10)
                 }
-//                .padding(.top,UIScreen.main.bounds.height / 6)
-                
-//                Spacer()
+             
                             
                 VStack(spacing: 10){
                     Text("Ever or Never")
                         .font(.custom("Montserrat-Black", size: UIFont.preferredFont(forTextStyle: .extraLargeTitle).pointSize))
-                        .foregroundColor(Color(red: 78/255, green: 130/255, blue: 209/255))
+                        .foregroundColor(.white)
                     
                     Text("Hello Welcome!")
+                        .foregroundColor(.white)
                 }
                 .padding(.bottom, UIScreen.main.bounds.height / 13)
                 

@@ -30,13 +30,14 @@ struct MultiplayLobby: View {
                                 HStack{
                                     Text("Session ID")
                                         .font(.title)
+                                        .foregroundColor(.white)
                                         .padding(.trailing, UIScreen.main.bounds .width * 0.45 )
                                 }
                                 
                                 HStack{
                                     Text(multiplaySessionViewModel.currentSessionId ?? "id will be generated here")
                                         .font(.title2)
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(.white.opacity(0.8))
                                     
                                 }
                                 .background(
@@ -58,7 +59,7 @@ struct MultiplayLobby: View {
                                         } label: {
                                             Image(systemName: isCopied ? "document.on.clipboard.fill" : "doc.on.clipboard")
                                                 .font(.system(size: 20))
-                                                .foregroundColor(.gray)
+                                                .foregroundColor(.white)
                                                 .frame(width: 44, height: 44)
                                                 .accessibilityLabel("Copy Quote")
                                                 .accessibilityHint("Copies the current quote to clipboard")
@@ -67,7 +68,7 @@ struct MultiplayLobby: View {
                                         ShareLink(item: "Use this session id to join: \n\n" + multiplaySessionViewModel.currentSessionId! + "\n\n"  + "Ever Ready, Never Bored – Let the Fun Begin! 🎉"){
                                             Image(systemName: "square.and.arrow.up")
                                                 .font(.system(size: 20))
-                                                .foregroundColor(.gray)
+                                                .foregroundColor(.white)
                                                 .accessibilityLabel("Share Quote")
                                                 .frame(width: 44, height: 44)
                                                 .accessibilityHint("Shares the current quote")
@@ -81,10 +82,15 @@ struct MultiplayLobby: View {
                         
                         .background(
                             Rectangle()
-                                .fill(Color.white)
+                                .fill(Color(red: 28/255, green: 41/255, blue: 56/255))
                                 .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.25)
                                 .cornerRadius(20)
                                 .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color(red: 42 / 255, green: 54 / 255, blue: 68 / 255), lineWidth: 1)
+                                        .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.25)
+                                )
                         )
                     }
                    
@@ -93,6 +99,7 @@ struct MultiplayLobby: View {
                         HStack{
                             Text("Participants")
                                 .font(.largeTitle)
+                                .foregroundColor(.white)
                             
                             Spacer()
                         }
@@ -102,17 +109,24 @@ struct MultiplayLobby: View {
                                 VStack(alignment: .leading) {
                                     Text(participant.displayName)
                                         .font(.headline)
+                                        .foregroundStyle(.white)
                                 }.background(
                                     Rectangle()
-                                        .fill(Color(red: 185/255, green: 203/255, blue: 236/246))
+                                        .fill(Color(red: 30/255, green: 47/255, blue: 75/255))
                                         .frame(width: UIScreen.main.bounds .width * 0.4 , height: UIScreen.main.bounds.height * 0.07)
                                         .cornerRadius(15)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .stroke(Color(red: 53 / 255, green: 68 / 255, blue: 93 / 255), lineWidth: 1)
+                                                .frame(width: UIScreen.main.bounds .width * 0.4 , height: UIScreen.main.bounds.height * 0.07)
+                                        )
                                 )
                                 .padding()
                                 
                                 
                             }
                         }
+                       
                         
                     }.padding()
                     
@@ -131,6 +145,7 @@ struct MultiplayLobby: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
+                        .padding(.top, 20)
                     }
                 }
             }

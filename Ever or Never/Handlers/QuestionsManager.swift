@@ -268,38 +268,169 @@ final class QuestionsManager {
     
 //    TODO: Check the below function after adding new questions to the question pool
     
-    func fetchRandomUniqueQuestions(userSeenQuestions: Set<String>, categoriers: [QuestionCategory], totalQuestionCount: Int) async throws -> [Question] {
+//    func fetchRandomUniqueQuestions(userSeenQuestions: Set<String>, categoriers: [QuestionCategory], totalQuestionCount: Int) async throws -> [Question] {
+//        print("Loading fresh questions...")
+//        
+//        var questions: [Question] = []
+//        var remainingQuestionCount = totalQuestionCount
+//        var fetchedQuestionIds: Set<String> = []
+//        
+//        // Fetch questions from each category
+//        for category in categoriers {
+//            var lastDocumentSnapshot: DocumentSnapshot? = nil
+//            
+//            while remainingQuestionCount > 0 {
+//                var query = questionsCollection
+//                    .whereField("category", isEqualTo: category.rawValue)
+//                    .limit(to: 20)
+//                
+//                if let lastSnapshot = lastDocumentSnapshot {
+//                    query = query.start(afterDocument: lastSnapshot)
+//                }
+//                
+//                let snapshot = try await query.getDocuments()
+//                let categoryQuestions = try snapshot.documents.compactMap { document in
+//                    try document.data(as: Question.self)
+//                }
+//                
+//                if categoryQuestions.isEmpty {
+//                    break
+//                }
+//                
+//                var availableQuestions = categoryQuestions.shuffled()
+//                var addedCount = 0 // Tracks how many questions are added in this iteration
+//                
+//                while !availableQuestions.isEmpty && remainingQuestionCount > 0 {
+//                    let randomIndex = Int.random(in: 0..<availableQuestions.count)
+//                    let question = availableQuestions.remove(at: randomIndex)
+//                    
+//                    if !userSeenQuestions.contains(question.id) && !fetchedQuestionIds.contains(question.id) {
+//                        questions.append(question)
+//                        fetchedQuestionIds.insert(question.id)
+//                        remainingQuestionCount -= 1
+//                        addedCount += 1
+//                    }
+//                }
+//                
+//                if addedCount == 0 {
+//                    break // Avoid infinite loop if no new questions are added
+//                }
+//                
+//                lastDocumentSnapshot = snapshot.documents.last
+//            }
+//        }
+//        
+//        // Fetch additional questions to fill the gap
+//        while remainingQuestionCount > 0 {
+//            
+//            var categoriyRawValues : [String] = []
+//            
+//            for category in categoriers {
+//                categoriyRawValues.append(category.rawValue)
+//            }
+//            
+//    
+//            let extraSnapshot = try await questionsCollection
+//                .whereField("category", notIn: categoriyRawValues)
+//                .limit(to: remainingQuestionCount).getDocuments()
+//            let extraQuestions = try extraSnapshot.documents.compactMap { document in
+//                try document.data(as: Question.self)
+//            }
+//            
+//            if extraQuestions.isEmpty {
+//                print("no more questions available")
+//                break // No more questions available
+//            }
+//            
+//            var availableQuestions = extraQuestions.shuffled()
+//            var addedCount = 0 // Tracks how many questions are added in this iteration
+//            
+//            while !availableQuestions.isEmpty && remainingQuestionCount > 0 {
+//                let randomIndex = Int.random(in: 0..<availableQuestions.count)
+//                let question = availableQuestions.remove(at: randomIndex)
+//                
+//                if !userSeenQuestions.contains(question.id) && !fetchedQuestionIds.contains(question.id) {
+//                    questions.append(question)
+//                    fetchedQuestionIds.insert(question.id)
+//                    remainingQuestionCount -= 1
+//                    addedCount += 1
+//                }
+//            }
+//            
+//            if addedCount == 0 {
+//                break // Avoid infinite loop if no new questions are added
+//            }
+//        }
+//        
+//        print("Fetched \(questions.count) unique questions out of \(totalQuestionCount) requested.")
+//        return questions
+//    }
+    
+    func fetchRandomUniqueQuestions(userSeenQuestions: inout Set<String>, categories: [QuestionCategory], totalQuestionCount: Int, userId: String) async throws -> [Question] {
         print("Loading fresh questions...")
         
         var questions: [Question] = []
         var remainingQuestionCount = totalQuestionCount
         var fetchedQuestionIds: Set<String> = []
         
-        // Fetch questions from each category
-        for category in categoriers {
+        // Helper to fetch questions for a category
+        func fetchQuestions(for categories: [QuestionCategory], excludingSeen: Bool) async throws -> [Question] {
+            var resultQuestions: [Question] = []
             var lastDocumentSnapshot: DocumentSnapshot? = nil
             
-            while remainingQuestionCount > 0 {
-                var query = questionsCollection
-                    .whereField("category", isEqualTo: category.rawValue)
-                    .limit(to: 10)
-                
-                if let lastSnapshot = lastDocumentSnapshot {
-                    query = query.start(afterDocument: lastSnapshot)
+            for category in categories {
+                while remainingQuestionCount > 0 {
+                    var query = questionsCollection
+                        .whereField("category", isEqualTo: category.rawValue)
+                        .limit(to: 20)
+                    
+                    if let lastSnapshot = lastDocumentSnapshot {
+                        query = query.start(afterDocument: lastSnapshot)
+                    }
+                    
+                    let snapshot = try await query.getDocuments()
+                    let categoryQuestions = try snapshot.documents.compactMap { document in
+                        try document.data(as: Question.self)
+                    }
+                    
+                    if categoryQuestions.isEmpty {
+                        break
+                    }
+                    
+                    var availableQuestions = categoryQuestions.shuffled()
+                    while !availableQuestions.isEmpty && remainingQuestionCount > 0 {
+                        let randomIndex = Int.random(in: 0..<availableQuestions.count)
+                        let question = availableQuestions.remove(at: randomIndex)
+                        
+                        if (!userSeenQuestions.contains(question.id) || !excludingSeen) && !fetchedQuestionIds.contains(question.id) {
+                            resultQuestions.append(question)
+                            fetchedQuestionIds.insert(question.id)
+                            remainingQuestionCount -= 1
+                        }
+                    }
+                    
+                    lastDocumentSnapshot = snapshot.documents.last
                 }
-                
-                let snapshot = try await query.getDocuments()
-                let categoryQuestions = try snapshot.documents.compactMap { document in
-                    try document.data(as: Question.self)
-                }
-                
-                if categoryQuestions.isEmpty {
-                    break
-                }
-                
-                var availableQuestions = categoryQuestions.shuffled()
-                var addedCount = 0 // Tracks how many questions are added in this iteration
-                
+            }
+            
+            return resultQuestions
+        }
+        
+        // First attempt: fetch questions excluding seen ones
+        questions = try await fetchQuestions(for: categories, excludingSeen: true)
+        
+        // Attempt to fetch additional questions from categories not specified
+        if questions.count < totalQuestionCount {
+            let excludedCategories = categories.map { $0.rawValue }
+            let extraSnapshot = try await questionsCollection
+                .whereField("category", notIn: excludedCategories)
+                .limit(to: remainingQuestionCount).getDocuments()
+            let extraQuestions = try extraSnapshot.documents.compactMap { document in
+                try document.data(as: Question.self)
+            }
+            
+            if !extraQuestions.isEmpty {
+                var availableQuestions = extraQuestions.shuffled()
                 while !availableQuestions.isEmpty && remainingQuestionCount > 0 {
                     let randomIndex = Int.random(in: 0..<availableQuestions.count)
                     let question = availableQuestions.remove(at: randomIndex)
@@ -308,57 +439,21 @@ final class QuestionsManager {
                         questions.append(question)
                         fetchedQuestionIds.insert(question.id)
                         remainingQuestionCount -= 1
-                        addedCount += 1
                     }
                 }
-                
-                if addedCount == 0 {
-                    break // Avoid infinite loop if no new questions are added
-                }
-                
-                lastDocumentSnapshot = snapshot.documents.last
             }
         }
         
-        // Fetch additional questions to fill the gap
-        while remainingQuestionCount > 0 {
+        // If still not enough questions, reset seen questions and refetch
+        if questions.count < totalQuestionCount {
+            print("Not enough unique questions found, resetting seen questions...")
+            userSeenQuestions.removeAll()
+            try await UserManager.shared.resetSeenQuestions(id: userId)
             
-            var categoriyRawValues : [String] = []
-            
-            for category in categoriers {
-                categoriyRawValues.append(category.rawValue)
-            }
-            
-    
-            let extraSnapshot = try await questionsCollection
-                .whereField("category", notIn: categoriyRawValues)
-                .limit(to: remainingQuestionCount).getDocuments()
-            let extraQuestions = try extraSnapshot.documents.compactMap { document in
-                try document.data(as: Question.self)
-            }
-            
-            if extraQuestions.isEmpty {
-                break // No more questions available
-            }
-            
-            var availableQuestions = extraQuestions.shuffled()
-            var addedCount = 0 // Tracks how many questions are added in this iteration
-            
-            while !availableQuestions.isEmpty && remainingQuestionCount > 0 {
-                let randomIndex = Int.random(in: 0..<availableQuestions.count)
-                let question = availableQuestions.remove(at: randomIndex)
-                
-                if !userSeenQuestions.contains(question.id) && !fetchedQuestionIds.contains(question.id) {
-                    questions.append(question)
-                    fetchedQuestionIds.insert(question.id)
-                    remainingQuestionCount -= 1
-                    addedCount += 1
-                }
-            }
-            
-            if addedCount == 0 {
-                break // Avoid infinite loop if no new questions are added
-            }
+            // Reset remaining question count and retry fetching
+            remainingQuestionCount = totalQuestionCount - questions.count
+            let additionalQuestions = try await fetchQuestions(for: categories, excludingSeen: false)
+            questions.append(contentsOf: additionalQuestions)
         }
         
         print("Fetched \(questions.count) unique questions out of \(totalQuestionCount) requested.")
