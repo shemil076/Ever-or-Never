@@ -19,7 +19,7 @@ struct AuthenticationView: View {
                     .init(color: Color(red: 16 / 255.0, green: 36 / 255.0, blue: 58 / 255.0), location: 0.0),
                     
                     
-                    .init(color: Color(red: 10 / 255.0, green: 23 / 255.0, blue: 37 / 255.0), location: 1.0) // Purple starts lower (60% of the view height)
+                        .init(color: Color(red: 10 / 255.0, green: 23 / 255.0, blue: 37 / 255.0), location: 1.0) // Purple starts lower (60% of the view height)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
@@ -40,8 +40,8 @@ struct AuthenticationView: View {
                         .frame(width: UIScreen.main.bounds.width)
                         .padding(.top, UIScreen.main.bounds.height/10)
                 }
-             
-                            
+                
+                
                 VStack(spacing: 10){
                     Text("Ever or Never")
                         .font(.custom("Montserrat-Black", size: UIFont.preferredFont(forTextStyle: .extraLargeTitle).pointSize))
@@ -53,7 +53,7 @@ struct AuthenticationView: View {
                 .padding(.bottom, UIScreen.main.bounds.height / 13)
                 
                 VStack (spacing: 20){
-
+                    
                     NavigationLink {
                         SignInEmailView(showSignInView: $showSignInView)
                     } label: {
@@ -81,7 +81,6 @@ struct AuthenticationView: View {
                 .padding(.bottom, UIScreen.main.bounds.height / 7)
             }
         }
-//        .ignoresSafeArea()
     }
 }
 

@@ -34,7 +34,7 @@ struct SignInEmailView: View {
             ViewBackground()
                 .ignoresSafeArea()
             
-
+            
             
             VStack{
                 VStack(alignment: .leading, spacing: 4) {
@@ -51,11 +51,8 @@ struct SignInEmailView: View {
                         .font(.body)
                         .foregroundColor(.white)
                 }
-
-//                TextField("Email...", text: $viewModel.email)
-//                    .padding()
-//                    .background(Color.gray.opacity(0.4))
-//                    .cornerRadius(10)
+                
+                
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Password")
@@ -72,11 +69,7 @@ struct SignInEmailView: View {
                         .font(.body)
                         .foregroundColor(.white)
                 }
-//
-//                SecureField("Password...", text: $viewModel.password)
-//                    .padding()
-//                    .background(Color.gray.opacity(0.4))
-//                    .cornerRadius(10)
+                
                 
                 Button {
                     if (!viewModel.email.isEmpty && !viewModel.password.isEmpty){
@@ -111,8 +104,7 @@ struct SignInEmailView: View {
                 }
             }
             .padding()
-            }
-//        .ignoresSafeArea()
+        }
     }
 }
 

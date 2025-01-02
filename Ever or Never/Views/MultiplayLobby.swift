@@ -95,7 +95,7 @@ struct MultiplayLobby: View {
                                     )
                             )
                         }
-                       
+                        
                         
                         Section {
                             HStack{
@@ -128,11 +128,11 @@ struct MultiplayLobby: View {
                                     
                                 }
                             }
-                           
+                            
                             
                         }.padding()
                         
-        //                Spacer()
+                        //                Spacer()
                         if multiplaySessionViewModel.hostId == multiplaySessionViewModel.user?.id {
                             Button(action: {
                                 Task{
@@ -159,7 +159,7 @@ struct MultiplayLobby: View {
                         multiplaySessionViewModel.observeSessionStates()
                         multiplaySessionViewModel.observeForParticipantsStatus()
                         multiplaySessionViewModel.observeForActiveParticipants()
-        
+                        
                     }
                 }
                 .onDisappear {
@@ -172,21 +172,15 @@ struct MultiplayLobby: View {
                     }
                 }
                 .background(
-                    // Navigation Link triggered programmatically
-//                    NavigationLink(
-//                        destination: MultiplayerQuizView(),
-//                        isActive: $navigateToQuiz,
-//                        label: { EmptyView() }
-//                    )
                     
                     EmptyView()
-                            .navigationDestination(isPresented: $navigateToQuiz) {
-                                MultiplayerQuizView()
-                            }
+                        .navigationDestination(isPresented: $navigateToQuiz) {
+                            MultiplayerQuizView()
+                        }
                 )
             }
         }
-
+        
     }
 }
 

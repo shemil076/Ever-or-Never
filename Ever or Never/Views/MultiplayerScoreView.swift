@@ -43,8 +43,8 @@ struct MultiplayerScoreView: View {
                             .frame(height: 60)
                             .frame(maxWidth: .infinity)
                             .cornerRadius(15)
-
-                            
+                        
+                        
                     ).overlay(
                         RoundedRectangle(cornerRadius: 15)
                             .stroke(Color.gray, lineWidth: 1)
@@ -60,21 +60,21 @@ struct MultiplayerScoreView: View {
                             .first(where: { $0.id == element.key })?.displayName ?? "Unknown"
                         let rank = index + 1
                         let score = element.value
-
+                        
                         HStack {
                             // Display rank
                             Text("#\(rank)")
                                 .foregroundColor(.white)
                                 .padding(.leading, 30)
-
+                            
                             Spacer()
-
+                            
                             // Display user display name
                             Text(userDisplayName)
                                 .foregroundColor(.white)
-
+                            
                             Spacer()
-
+                            
                             // Display score
                             Text("\(score)")
                                 .foregroundColor(.white)
@@ -102,20 +102,7 @@ struct MultiplayerScoreView: View {
                         }
                         
                     }
-
                     
-    //           #AE82D1
-    //                List(multiplaySessionViewModel.score.sorted(by: { $0.key < $1.key }), id: \.key) { playerId, score in
-    //                    HStack {
-    //                        Text("Player ID: \(playerId)")
-    //                            .font(.body)
-    //                        Spacer()
-    //                        Text("Score: \(score)")
-    //                            .font(.headline)
-    //                    }
-    //                    .padding(.vertical, 5)
-    //
-    //                }
                     
                     Spacer()
                     VStack(spacing:30){
@@ -135,16 +122,9 @@ struct MultiplayerScoreView: View {
                     .padding(20)
                     
                     
-//                    NavigationLink(isActive: $navigateToModeSelection) {
-//                        GameModeSelectionView(showSignInView: $showSignInView)
-//                    } label: {
-//                        EmptyView()
-//                    }
-
+                    
                     Spacer()
                 }
-    //            .alert(isPresented: )
-                
                 
                 .padding(20)
                 .navigationBarBackButtonHidden()
@@ -154,7 +134,7 @@ struct MultiplayerScoreView: View {
                     multiplaySessionViewModel.endQuiz()
                     multiplaySessionViewModel.observeForParticipantsStatus()
                     multiplaySessionViewModel.observeForActiveParticipants()
-
+                    
                 }
                 .onDisappear(){
                     multiplaySessionViewModel.stopObservingSession()

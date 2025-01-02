@@ -13,7 +13,7 @@ class HelperFunctions{
     
     static func getUserFriendlyErrorMessage(stringError: String) -> String{
         switch stringError{
-            case let msg where msg.contains("No document to update: "):
+        case let msg where msg.contains("No document to update: "):
             return "Invalid ID provided"
         default:
             return stringError
@@ -28,5 +28,5 @@ class HelperFunctions{
             isCopied.wrappedValue = false
         }
     }
-
+    
 }

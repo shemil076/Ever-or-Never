@@ -21,7 +21,7 @@ enum QuestionCategory: String, Codable, CaseIterable {
     case supernatural = "Supernatural"
     case personal = "Personal"
     case games = "Games"
-
+    
     // Make the decoding case-insensitive
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

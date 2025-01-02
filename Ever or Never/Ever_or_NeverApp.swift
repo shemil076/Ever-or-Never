@@ -24,23 +24,13 @@ struct Ever_or_NeverApp: App {
     @StateObject var networkMonitor = NetworkMonitor()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
-   
-
-    
-    
-    //    @StateObject private var multiPlayerSessionViewModel = MultiplayerSessionViewModel()
-    
-    
     
     var body: some Scene {
         WindowGroup {
             if networkMonitor.isConnected{
                 NavigationStack{
-                    //                AuthenticationView()
                     ContentView()
-                      
-                        
-                    //                    .environmentObject(AppDependancyContainer.shared.multiGameSessionViewModel)
+                    
                 }
             }else{
                 NoConnectionView()
@@ -48,13 +38,7 @@ struct Ever_or_NeverApp: App {
         }
     }
     
-
 }
-
-//    init(){
-//        FirebaseApp.configure()
-//        print("Firebase App Configured")
-//    }
 
 
 struct NoConnectionView: View {

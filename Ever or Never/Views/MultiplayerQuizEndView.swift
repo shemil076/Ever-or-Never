@@ -48,15 +48,10 @@ struct MultiplayerQuizEndView: View {
                                 .cornerRadius(10)
                         }.padding(20)
                             .padding(.top, UIScreen.main.bounds.height / 9)
-
+                        
                     }
                     
                     
-//                    NavigationLink(
-//                        destination: MultiplayerScoreView(),
-//                        isActive: $navigateToScoreboard,
-//                        label: { EmptyView() }
-//                    )
                 }
             }
         }

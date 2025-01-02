@@ -11,9 +11,9 @@ import SwiftUI
 final class ProfileViewModel: ObservableObject {
     
     static let shared = ProfileViewModel()
-
+    
     @Published private(set) var user: DBUser? = nil
-   
+    
     
     func loadCurrentUser() async throws {
         let authDataResult = try  AuthenticationManager.shared.getAuthenticatedUser()
@@ -38,37 +38,37 @@ struct ProfileView: View {
     @Binding var showSignInView : Bool
     var body: some View {
         List{
-             if let user = profileViewModel.user {
-                 Text("UserId: \(user.id)")
-                 Text("Email: \(String(describing: user.email))")
-                 Text("profile created date: \(String(describing: user.dateCreated))")
-                 
-                 Button{
-                     Task{
-                         try? await profileViewModel.togglePremiumStatus()
-                     }
-                 } label: {
-                     Text("User is premium \((user.isPremium).description.capitalized)")
-                 }
+            if let user = profileViewModel.user {
+                Text("UserId: \(user.id)")
+                Text("Email: \(String(describing: user.email))")
+                Text("profile created date: \(String(describing: user.dateCreated))")
+                
+                Button{
+                    Task{
+                        try? await profileViewModel.togglePremiumStatus()
+                    }
+                } label: {
+                    Text("User is premium \((user.isPremium).description.capitalized)")
+                }
             }
             
-          
+            
         }
         .task{
             try? await profileViewModel.loadCurrentUser()
         }
         .navigationTitle("Profile")
-            .toolbar{
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    
-                    NavigationLink{ 
-                        SettingsView(showSignInView: $showSignInView)
-                    } label: {
-                        Image(systemName: "gear")
-                            .font(.headline)
-                    }
+        .toolbar{
+            ToolbarItem(placement: .navigationBarTrailing) {
+                
+                NavigationLink{
+                    SettingsView(showSignInView: $showSignInView)
+                } label: {
+                    Image(systemName: "gear")
+                        .font(.headline)
                 }
             }
+        }
     }
 }
 

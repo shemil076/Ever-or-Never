@@ -70,7 +70,6 @@ class SinglePlayerSessionViewModel: ObservableObject{
         }
         
         do{
-            //            fetchRandomUniqueQuestions
             
             questions = try  await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: &userSeenQuestions, categories: categories, totalQuestionCount: totalQuestionCount, userId: userId)
             //            questions = try  await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
@@ -107,18 +106,6 @@ class SinglePlayerSessionViewModel: ObservableObject{
         answers.append(QuestionAnswer(question: questionId, answer: answer))
     }
     
-    //    func calculateScore(){
-    //        let count = answers.reduce((yes: 0, no: 0)) { counts, answer in
-    //                if answer.answer {
-    //                    return (yes: counts.yes + 1, no: counts.no)
-    //                } else {
-    //                    return (yes: counts.yes, no: counts.no + 1)
-    //                }
-    //        }
-    //
-    //        yesAnswerCount = count.yes
-    //        noAnswerCount = count.no
-    //    }
     
     func calculateScore(){
         var score: Int = 0
@@ -155,7 +142,7 @@ class SinglePlayerSessionViewModel: ObservableObject{
                 questionsAnswers: answers
             )
             
-//            resetData();
+            //            resetData();
             setNoSessionError()
         } catch {
             setSessionError(error: error)
@@ -164,7 +151,7 @@ class SinglePlayerSessionViewModel: ObservableObject{
     }
     
     
-     func resetData() {
+    func resetData() {
         currentSessionId  = nil
         questions = []
         yesAnswerCount = 0

@@ -9,7 +9,6 @@ import SwiftUI
 
 struct MultiplayerQuizView: View {
     @StateObject private var multiplaySessionViewModel = MultiplayerSessionViewModel.shared
-//    @State private var currentQuestionIndex: Int = 0
     @State private var showAnswer: Bool = false
     @State private var showAlert : Bool = false
     var body: some View {
@@ -18,18 +17,7 @@ struct MultiplayerQuizView: View {
                 ViewBackground()
                 
                 ZStack{
-    //                Rectangle()
-    //                    .fill(Color(red: 187 / 255.0, green: 209 / 255.0, blue: 243 / 255.0))
-    //                    .frame(width: UIScreen.main.bounds.width / 1.37, height: UIScreen.main.bounds.height / 1.5)
-    //                    .cornerRadius(20)
-    //                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 5)
-    //                    .offset(y: 20)
-    //                Rectangle()
-    //                    .fill(Color(red: 212 / 255.0, green: 227 / 255.0, blue: 249 / 255.0))
-    //                    .frame(width: UIScreen.main.bounds.width / 1.27, height: UIScreen.main.bounds.height / 1.5)
-    //                    .cornerRadius(20)
-    //                    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 5)
-    //                    .offset(y: 10)
+                    
                     Rectangle()
                         .fill(Color(red: 28/255, green: 41/255, blue: 56/255))
                         .frame(width: UIScreen.main.bounds.width / 1.2, height: UIScreen.main.bounds.height / 1.4)
@@ -57,7 +45,7 @@ struct MultiplayerQuizView: View {
                                         .animation(.easeInOut, value: progress)
                                 }
                                 .frame(width: UIScreen.main.bounds.width / 2)
-                                                            
+                                
                                 Text(" \(multiplaySessionViewModel.currentQuestionIndex + 1) / \(multiplaySessionViewModel.questions.count) ")
                                     .foregroundStyle(.white)
                             }
@@ -81,7 +69,7 @@ struct MultiplayerQuizView: View {
                                 Button {
                                     if multiplaySessionViewModel.currentQuestionIndex < (multiplaySessionViewModel.questions.count ) {
                                         
-                                       
+                                        
                                         
                                         Task{
                                             await multiplaySessionViewModel.submitAnswer(question: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question, questionId: multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id, answer: true)
@@ -92,16 +80,11 @@ struct MultiplayerQuizView: View {
                                             }
                                         }
                                         showAnswer = true
-            //                            currentQuestionIndex += 1
                                         
                                     }
-    //                                else {
-    //                                    // End of quiz logic
-    //
-    //
-    //                                }
                                     
-                        
+                                    
+                                    
                                 } label: {
                                     Text("Yes")
                                         .font(.headline)
@@ -109,7 +92,7 @@ struct MultiplayerQuizView: View {
                                         .frame(height: 60)
                                         .frame(maxWidth: .infinity)
                                         .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                                        .cornerRadius(20)                            }
+                                    .cornerRadius(20)                            }
                                 
                                 Button {
                                     if multiplaySessionViewModel.currentQuestionIndex < (multiplaySessionViewModel.questions.count) {
@@ -123,12 +106,9 @@ struct MultiplayerQuizView: View {
                                             }
                                         }
                                         
-            //                            currentQuestionIndex += 1
                                         showAnswer = true
                                     }
-    //                                else {
-    //                                    // End of quiz logic
-    //                                }
+                                    
                                 } label: {
                                     Text("NO")
                                         .font(.headline)
@@ -150,17 +130,8 @@ struct MultiplayerQuizView: View {
                             Text("\(multiplaySessionViewModel.currentQuestionIndex + 1) of \(multiplaySessionViewModel.questions.count) Questions")
                                 .foregroundColor(.gray)
                             
-//                            NavigationLink(
-//                                destination: MultiplayerAnswersView(),
-//                                isActive: $showAnswer
-//                            ){
-//                                EmptyView()
-//                            }
                         }
-    //                    else{
-    //
-    //                        ScoreView(singlePlayerViwModel: singlePlayerViwModel)
-    //                    }
+                        
                     }
                     .padding(20)
                     .alert(isPresented: $showAlert){
@@ -174,18 +145,18 @@ struct MultiplayerQuizView: View {
                     }
                 }
                 .padding(20)
-               
+                
             }
         }
         .navigationDestination(isPresented: $showAnswer, destination: {
             MultiplayerAnswersView()
         })
         .navigationBarBackButtonHidden()
-            .onAppear{
-                multiplaySessionViewModel.observeForParticipantsStatus()
-                multiplaySessionViewModel.observeForActiveParticipants()
-
-            }
+        .onAppear{
+            multiplaySessionViewModel.observeForParticipantsStatus()
+            multiplaySessionViewModel.observeForActiveParticipants()
+            
+        }
     }
 }
 

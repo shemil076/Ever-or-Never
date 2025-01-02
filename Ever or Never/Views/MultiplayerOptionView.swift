@@ -30,20 +30,6 @@ struct MultiplayerOptionView: View {
                         .foregroundColor(.white)
                     
                     
-    //                VStack(alignment: .leading, spacing: 4) {
-    //                    Text("Join Now")
-    //                        .font(.caption)
-    //                        .foregroundColor(.white)
-    //
-    //                    TextField("Enter the code", text: $sessionIdInput)
-    //                        .padding()
-    //                        .background(
-    //                            RoundedRectangle(cornerRadius: 8)
-    //                                .stroke(Color.gray, lineWidth: 1)
-    //                        )
-    //                        .font(.body)
-    //                        .foregroundColor(.white)
-    //                }
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Join Now")
                             .font(.caption)
@@ -129,9 +115,9 @@ struct MultiplayerOptionView: View {
                     HStack{
                         VStack{
                             Divider()
-                                
+                            
                                 .frame(height: 1)
-                                        .background(Color.gray)
+                                .background(Color.gray)
                         }
                         .padding()
                         
@@ -142,7 +128,7 @@ struct MultiplayerOptionView: View {
                         VStack{
                             Divider()
                                 .frame(height: 1)
-                                        .background(Color.gray)
+                                .background(Color.gray)
                         }
                         .padding()
                     }
@@ -153,28 +139,21 @@ struct MultiplayerOptionView: View {
                         .fontWeight(.semibold)
                     
                     NavigationLink(destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(true))){
-                        //                    Text("Multiplayer")
-                        //                        .font(.headline)
-                        //                        .padding()
-                        //                        .frame(maxWidth: .infinity)
-                        //                        .background(Color.blue)
-                        //                        .foregroundColor(.white)
-                        //                        .cornerRadius(10)
+                        
                         
                         VStack(alignment: .center){
                             ZStack{
-
+                                
                                 HStack{
                                     VStack(alignment: .leading){
                                         Text("New Game")
                                             .font(.title)
                                             .fontWeight(.semibold)
                                             .foregroundColor(.white)
-
+                                        
                                         
                                     }
-    //                                .padding(.trailing, 30)
-                                        .frame(width: UIScreen.main.bounds.width * 0.7)
+                                    .frame(width: UIScreen.main.bounds.width * 0.7)
                                     
                                     Image(systemName: "arrow.up.forward")
                                         .foregroundColor(.black)
@@ -184,7 +163,6 @@ struct MultiplayerOptionView: View {
                                                 .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
                                                 .cornerRadius(50)
                                         )
-    //                                    .padding(.top, 20)
                                 }
                                 
                             }.background(
@@ -202,34 +180,6 @@ struct MultiplayerOptionView: View {
                     
                     .disabled(isJoinDisabled)
                     
-                    //                VStack{
-                    //                    HStack{
-                    //                        Text("Join now ")
-                    //
-                    //                        TextField("Session Id", text: $sessionIdInput)
-                    //                            .padding()
-                    //                            .background(Color.gray.opacity(0.4))
-                    //                            .cornerRadius(10)
-                    //                    }
-                    //
-                    //                    Button {
-                    //                        Task{
-                    //                            try await MultiplayerSessionViewModel.shared.joingGameSession(sessionId: sessionIdInput)
-                    //                            isGameSessionReady = true
-                    //                        }
-                    //                    } label: {
-                    //                        Text("Start Quiz")
-                    //                    }
-                    //
-                    //
-                    //                }
-                    
-//                    NavigationLink(
-//                        destination: MultiplayLobby(),
-//                        isActive: $isGameSessionReady
-//                    ) {
-//                        EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
-//                    }
                 }
                 .onAppear{
                     Task{

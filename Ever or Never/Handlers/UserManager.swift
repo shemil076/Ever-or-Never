@@ -56,7 +56,7 @@ struct DBUser: Codable, Identifiable, Hashable {
         let currentPremiumStatus = isPremium
         return DBUser(id: id, dateCreated: dateCreated, email: email, photoURL: photoURL, isPremium: !currentPremiumStatus, displayName: displayName, dob: dob)
     }
-     
+    
     enum CodingKeys:String,  CodingKey {
         case id = "id"
         case dateCreated = "dateCreated"
@@ -79,10 +79,10 @@ struct DBUser: Codable, Identifiable, Hashable {
         self.dob = try container.decode(Date.self, forKey: .dob)
         
         let seenQuestionsArray = try container.decodeIfPresent([String].self, forKey: .seenQuestions)
-            self.seenQuestions = seenQuestionsArray != nil ? Set(seenQuestionsArray!) : nil
+        self.seenQuestions = seenQuestionsArray != nil ? Set(seenQuestionsArray!) : nil
     }
     
- 
+    
     
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -96,8 +96,8 @@ struct DBUser: Codable, Identifiable, Hashable {
         try container.encodeIfPresent(self.seenQuestions, forKey: .seenQuestions)
         
         if let seenQuestions = self.seenQuestions {
-               try container.encode(Array(seenQuestions), forKey: .seenQuestions)
-           }
+            try container.encode(Array(seenQuestions), forKey: .seenQuestions)
+        }
     }
     
     
@@ -113,7 +113,7 @@ final class UserManager {
     
     private let userCollection = Firestore.firestore().collection("users")
     
-
+    
     
     private func userDocument(id: String) -> DocumentReference {
         userCollection.document(id)
@@ -123,8 +123,8 @@ final class UserManager {
         try userDocument(id: user.id).setData(from: user, merge: true)
     }
     
-     
-
+    
+    
     
     func getUser(id: String) async throws -> DBUser{
         try await userDocument(id: id).getDocument(as: DBUser.self)
@@ -152,11 +152,11 @@ final class UserManager {
         
         let seenQuestionsArray = Array(seenQuestions)
         
-//        let newSeenQuestionsArray =  Array(newQuestions)
+        //        let newSeenQuestionsArray =  Array(newQuestions)
         
-//        for newQuestion in newSeenQuestionsArray{
-//            seenQuestionsArray.append(newQuestion)
-//        }
+        //        for newQuestion in newSeenQuestionsArray{
+        //            seenQuestionsArray.append(newQuestion)
+        //        }
         
         
         let data: [String: Any] = [
@@ -164,7 +164,7 @@ final class UserManager {
         ]
         
         try await userDocument(id: id).updateData(data)
-            
+        
     }
     
     func resetSeenQuestions(id: String) async throws{

@@ -20,14 +20,14 @@ struct SinglePlayerQuizSession: Codable{
     let questionsAndAnswers: [QuestionAnswer]
     
     init(id: String = "", dateCreated: Date, userId: String, numberOfQuestions: Int, score: TypeScore, questionCategories: [QuestionCategory], questionsAndAnswers: [QuestionAnswer]) {
-            self.id = id
-            self.dateCreated = dateCreated
-            self.userId = userId
-            self.numberOfQuestions = numberOfQuestions
-            self.score = score
-            self.questionCategories = questionCategories
-            self.questionsAndAnswers = questionsAndAnswers
-        }
+        self.id = id
+        self.dateCreated = dateCreated
+        self.userId = userId
+        self.numberOfQuestions = numberOfQuestions
+        self.score = score
+        self.questionCategories = questionCategories
+        self.questionsAndAnswers = questionsAndAnswers
+    }
     
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -64,7 +64,7 @@ struct SinglePlayerQuizSession: Codable{
 }
 
 final class SinglePlayerSessionManager{
-   
+    
     
     init() {
         
@@ -87,40 +87,40 @@ final class SinglePlayerSessionManager{
             questionCategories: qustionCategories,
             questionsAndAnswers:[]
         )
-                
+        
         var sessionID: String? = nil
         
         do {
             let data = try Firestore.Encoder().encode(newSession)
-//            sessionRef = singlePlayerSectionsCollection.addDocument(data: data){ error in
-//                if let error = error{
-////                    throw URLError(.badServerResponse)
-//                    print("Error adding document: \(error.localizedDescription)")
-//                    return
-//                }
-//                
-//                guard let sessionId = sessionRef?.documentID else {
-////                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve session ID."])))
-//                    print("Failed to retrieve session ID.")
-//                    return
-//                }
-//                
-//                sessionRef?.updateData(["quiz_session_id": sessionId]) { updatedError in
-//                    if let updatedError {
-////                        completion(.failure(updatedError))
-//                        print("Error updating document: \(updatedError.localizedDescription)")
-//                        return
-//                    }else{
-//                        newSession.quizSessionId = sessionId
-//                        print("Session created successfully.")
-//                        
-//                        sessionID = sessionId
-//                        
-////                        completion(.success(newSession))
-//                    }
-//                }
-//                
-//            }
+            //            sessionRef = singlePlayerSectionsCollection.addDocument(data: data){ error in
+            //                if let error = error{
+            ////                    throw URLError(.badServerResponse)
+            //                    print("Error adding document: \(error.localizedDescription)")
+            //                    return
+            //                }
+            //                
+            //                guard let sessionId = sessionRef?.documentID else {
+            ////                    completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve session ID."])))
+            //                    print("Failed to retrieve session ID.")
+            //                    return
+            //                }
+            //                
+            //                sessionRef?.updateData(["quiz_session_id": sessionId]) { updatedError in
+            //                    if let updatedError {
+            ////                        completion(.failure(updatedError))
+            //                        print("Error updating document: \(updatedError.localizedDescription)")
+            //                        return
+            //                    }else{
+            //                        newSession.quizSessionId = sessionId
+            //                        print("Session created successfully.")
+            //                        
+            //                        sessionID = sessionId
+            //                        
+            ////                        completion(.success(newSession))
+            //                    }
+            //                }
+            //                
+            //            }
             
             
             
@@ -137,7 +137,6 @@ final class SinglePlayerSessionManager{
             
             
         } catch {
-//            completion(.failure(error))
             print("Error creating initial quiz session: \(error.localizedDescription)")
             return sessionID
             
@@ -148,33 +147,33 @@ final class SinglePlayerSessionManager{
     func completeSessionByUpdatingData(sessionId : String, score : TypeScore , questionsAnswers : [QuestionAnswer]) async throws{
         
         let data: [String: Any] = [
-                "score": [
-                    "yesAnswerCount": score.yesAnswerCount,
-                    "noAnswerCount": score.noAnswerCount
-                ],
-                "questionsAndAnswers": questionsAnswers.map { questionAnswer in
-                    [
-                        "questionId": questionAnswer.question,
-                        "answer": questionAnswer.answer
-                    ]
-                },
-                "dateCompleted": FieldValue.serverTimestamp()
-            ]
+            "score": [
+                "yesAnswerCount": score.yesAnswerCount,
+                "noAnswerCount": score.noAnswerCount
+            ],
+            "questionsAndAnswers": questionsAnswers.map { questionAnswer in
+                [
+                    "questionId": questionAnswer.question,
+                    "answer": questionAnswer.answer
+                ]
+            },
+            "dateCompleted": FieldValue.serverTimestamp()
+        ]
         
         
         let documentRef = singlePlayerSessionCollection.document(sessionId)
-           
-           do {
-               // Update the document in Firestore
-               try await documentRef.updateData(data)
-               print("Session \(sessionId) updated successfully.")
-           } catch {
-               print("Failed to update session \(sessionId): \(error.localizedDescription)")
-               throw error
-           }
+        
+        do {
+            // Update the document in Firestore
+            try await documentRef.updateData(data)
+            print("Session \(sessionId) updated successfully.")
+        } catch {
+            print("Failed to update session \(sessionId): \(error.localizedDescription)")
+            throw error
+        }
     }
     
-
+    
     func fetchSessionData(sessionId: String) async throws -> SinglePlayerQuizSession?{
         let documentRef = try await singlePlayerSessionCollection.document(sessionId).getDocument()
         
@@ -193,25 +192,3 @@ final class SinglePlayerSessionManager{
     }
     
 }
-
-
-//func fetchSession(sessionId: String) async throws -> MultiplayerQuizSession {
-//    let document = try await multiplayerSessionCollection.document(sessionId).getDocument()
-
-//    
-//    guard let data = document.data() else {
-//        print("No data related to session Id \(sessionId) was found")
-//        throw NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Session not found."])
-//    }
-
-//    
-//    do {
-//        // Attempt to decode the session data
-//        let session = try Firestore.Decoder().decode(MultiplayerQuizSession.self, from: data)
-//        return session
-//    } catch {
-//        // Catch and print the decoding error
-//        print("Decoding error: \(error)")
-//        throw NSError(domain: "MultiplayerSession", code: -2, userInfo: [NSLocalizedDescriptionKey: "Decoding error: \(error.localizedDescription)"])
-//    }
-//}

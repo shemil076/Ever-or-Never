@@ -10,7 +10,5 @@ import Foundation
 class AppDependancyContainer {
     static let shared = AppDependancyContainer()
     
-//    let multiGameSessionViewModel = MultiplayerSessionViewModel()
-    
     private init() {}
 }

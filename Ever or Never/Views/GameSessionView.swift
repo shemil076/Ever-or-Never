@@ -16,7 +16,7 @@ struct GameSessionView: View {
         NavigationStack{
             ZStack {
                 ViewBackground()
-            
+                
                 
                 ZStack{
                     Rectangle()
@@ -53,7 +53,7 @@ struct GameSessionView: View {
                                         .animation(.easeInOut, value: progress)
                                 }
                                 .frame(width: UIScreen.main.bounds.width / 2)
-                                                            
+                                
                                 Text(" \(currentQuestionIndex + 1) / \(singlePlayerViwModel.questions.count) ")
                                     .foregroundStyle(.white)
                             }
@@ -76,7 +76,7 @@ struct GameSessionView: View {
                                 Button {
                                     if currentQuestionIndex < (singlePlayerViwModel.questions.count ) {
                                         
-                                       
+                                        
                                         
                                         singlePlayerViwModel.submitAnswer(questionId: singlePlayerViwModel.questions[currentQuestionIndex].question, answer: true)
                                         
@@ -87,10 +87,10 @@ struct GameSessionView: View {
                                         
                                     } else {
                                         // End of quiz logic
-                                       
+                                        
                                     }
                                     
-                        
+                                    
                                 } label: {
                                     Text("Yes")
                                         .font(.headline)
@@ -100,9 +100,9 @@ struct GameSessionView: View {
                                         .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                                         .cornerRadius(20)
                                 }
-
                                 
-
+                                
+                                
                                 Button  {
                                     if currentQuestionIndex < (singlePlayerViwModel.questions.count) {
                                         
@@ -129,24 +129,20 @@ struct GameSessionView: View {
                                                 .frame(maxWidth: .infinity)
                                         )
                                 }
-
-
+                                
+                                
                             }
                             .padding(20)
                             
                             Text("\(currentQuestionIndex + 1) of \(singlePlayerViwModel.questions.count) Questions")
                                 .foregroundColor(.gray)
                         }
-
+                        
                     }
                     .padding(20)
                 }
                 .padding(20)
                 
-                
-//                NavigationLink(destination: ScoreView(singlePlayerViwModel: singlePlayerViwModel), isActive: $navigateToScoreView) {
-//                    EmptyView()
-//                }
             }
             .navigationDestination(isPresented:  $navigateToScoreView) {
                 ScoreView(singlePlayerViwModel: singlePlayerViwModel)

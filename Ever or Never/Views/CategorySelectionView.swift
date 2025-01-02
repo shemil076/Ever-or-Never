@@ -31,7 +31,7 @@ struct CategorySelectionView: View {
                 ViewBackground()
                     .ignoresSafeArea()
                 
-                //
+                
                 VStack(){
                     HStack{
                         Text("Category Selection")
@@ -42,7 +42,6 @@ struct CategorySelectionView: View {
                         
                         Spacer()
                     }
-                    //                .padding(.top , UIScreen.main.bounds.height / 10)
                     ScrollView{
                         LazyVGrid(columns: adaptiveColumn, spacing: 30){
                             ForEach(availableCategories, id: \.self){ category in
@@ -124,24 +123,6 @@ struct CategorySelectionView: View {
                                 )
                             }
                         }
-                    
-                    
-                    
-                    //                    if !isMultiplePlayerMode{
-                    //                        NavigationLink(
-                    //                            destination: GameSessionView(singlePlayerViwModel: singleGameSessionViewModel),
-                    //                            isActive: $isGameSessionReady
-                    //                        ) {
-                    //                            EmptyView() // Keeps the link hidden but active when `isGameSessionReady` is true
-                    //                        }
-                    //                    }else{
-                    //                        NavigationLink(
-                    //                            destination: MultiplayLobby(),
-                    //                            isActive: $isGameSessionReady
-                    //                        ) {
-                    //                            EmptyView()
-                    //                        }
-                    //                    }
                 }
                 .navigationDestination(isPresented: $isGameSessionReady) {
                     if isMultiplePlayerMode {
@@ -188,7 +169,7 @@ struct MultipleSelectionRow : View {
         Button {
             action()
         } label: {
-            //            ZStack{
+            
             Text(category.rawValue)
                 .foregroundColor(.white )
                 .background(
@@ -197,8 +178,6 @@ struct MultipleSelectionRow : View {
                         .frame(width: UIScreen.main.bounds.width * 0.4 ,height:   UIScreen.main.bounds.height / 15)
                         .cornerRadius(15)
                 )
-            //            }
-            
         }
         .padding(.horizontal, 40)
         .padding(.vertical, 10)

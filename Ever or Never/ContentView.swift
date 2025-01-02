@@ -14,7 +14,7 @@ struct ContentView: View {
     
     @State private var navigateToGameModeSelection: Bool = false
     @Environment(\.scenePhase) var scenePhase
-
+    
     var body: some View {
         ZStack {
             NavigationStack {
@@ -24,12 +24,12 @@ struct ContentView: View {
                     }
             }
             
-//            NavigationLink(isActive: $navigateToGameModeSelection) {
-//                GameModeSelectionView(showSignInView: $showSignInView)
-//            } label: {
-//                EmptyView()
-//            }
-
+            //            NavigationLink(isActive: $navigateToGameModeSelection) {
+            //                GameModeSelectionView(showSignInView: $showSignInView)
+            //            } label: {
+            //                EmptyView()
+            //            }
+            
         }
         .onAppear {
             let authUser = try? AuthenticationManager.shared.getAuthenticatedUser()
@@ -42,12 +42,12 @@ struct ContentView: View {
             }
         }
     }
-
+    
     func handleScenePhaseChange(_ scenePhase: ScenePhase)  {
         guard gameSessionManager.isMultiplayerGame,
-             let _ = gameSessionManager.sessionID,
+              let _ = gameSessionManager.sessionID,
               let _ = gameSessionManager.playerID else { return }
-
+        
         switch scenePhase {
         case .active:
             print("Active")
@@ -57,16 +57,16 @@ struct ContentView: View {
             print("Inactive")
             gameSessionManager.markActive()
             
-//            if multiplaySessionViewModel.isGameStarted && !multiplaySessionViewModel.isGameEnded{
-//                Task{
-//                    try? await Task.sleep(nanoseconds: 10_000_000_000)
-//                    await multiplaySessionViewModel.removeQuitedPlayers()
-//                    navigateToGameModeSelection = true
-//                }
-//            }
+            //            if multiplaySessionViewModel.isGameStarted && !multiplaySessionViewModel.isGameEnded{
+            //                Task{
+            //                    try? await Task.sleep(nanoseconds: 10_000_000_000)
+            //                    await multiplaySessionViewModel.removeQuitedPlayers()
+            //                    navigateToGameModeSelection = true
+            //                }
+            //            }
         case .background:
             print("Background")
-        
+            
         default:
             break
         }

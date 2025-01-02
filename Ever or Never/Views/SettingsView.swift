@@ -76,7 +76,7 @@ struct SettingsView: View {
             } label: {
                 Text("Delete Account")
             }
-
+            
             
             Button("Reset Password"){
                 Task{

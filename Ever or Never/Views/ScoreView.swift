@@ -39,7 +39,7 @@ struct ScoreView: View {
                                 .frame(width: UIScreen.main.bounds.width / 2)
                                 .padding(20)
                             
-                           
+                            
                             VStack{
                                 
                                 Text("Your Final Score")
@@ -62,7 +62,7 @@ struct ScoreView: View {
                                 
                             }.padding(.top, UIScreen.main.bounds.height / 3)
                         }
-
+                        
                         
                         VStack(spacing:30){
                             Button {
@@ -76,20 +76,13 @@ struct ScoreView: View {
                                     .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                                     .cornerRadius(10)
                             }
-
+                            
                         }
                         .padding(.top, 20)
                         .padding(30)
                     }
                 }
                 
-//                NavigationLink(isActive: $navigateToModeSelection) {
-//                    GameModeSelectionView(showSignInView: $showSignInView)
-//                } label: {
-//                    EmptyView()
-//                }
-               
-            
             }
         }
         .navigationDestination(isPresented: $navigateToModeSelection, destination: {
@@ -119,5 +112,4 @@ struct ScoreView: View {
 
 #Preview {
     ScoreView(singlePlayerViwModel: SinglePlayerSessionViewModel())
-//    ScoreView()
 }

@@ -16,7 +16,7 @@ class GameSessionManager : ObservableObject {
     
     @Published private var multiplayerSessionManager = MultiplayerSessionManager()
     
-
+    
     static var shared = GameSessionManager()
     
     func markActive(){

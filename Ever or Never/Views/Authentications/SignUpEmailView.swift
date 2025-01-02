@@ -37,25 +37,7 @@ struct SignUpEmailView: View {
             ViewBackground()
                 .ignoresSafeArea()
             
-            //            DualCircles()
             
-//            ZStack(alignment: .leading) {
-//                if sessionIdInput.isEmpty {
-//                    Text("Enter the code")
-//                        .foregroundColor(.gray) // Set placeholder text color
-//                        .padding(.leading, 12)   // Match padding inside the TextField
-//                }
-//                
-//                TextField("", text: $sessionIdInput)
-//                    .padding()
-//                    .background(
-//                        RoundedRectangle(cornerRadius: 8)
-//                            .stroke(Color.gray, lineWidth: 1)
-//                    )
-//                    .font(.body)
-//                    .foregroundColor(.white)
-//            }
-
             
             VStack(alignment: .leading, spacing: 20){
                 
@@ -68,45 +50,31 @@ struct SignUpEmailView: View {
                         .font(.caption)
                         .foregroundColor(.gray)
                     
-//                    TextField("Enter the display name", text: $viewModel.displayName)
-//                        .padding()
-//                        .background(
-//                            RoundedRectangle(cornerRadius: 8)
-//                                .stroke(Color.gray, lineWidth: 1)
-//                        )
-//                        .font(.body)
-//                        .foregroundColor(.white)
                     
-                                ZStack(alignment: .leading) {
-                                    if viewModel.displayName.isEmpty {
-                                        Text("Enter the display name")
-                                            .foregroundColor(.gray)
-                                            .padding(.leading, 12)
-                                    }
                     
-                                    TextField("", text: $viewModel.displayName)
-                                        .padding()
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.gray, lineWidth: 1)
-                                        )
-                                        .font(.body)
-                                        .foregroundColor(.white)
-                                }
+                    ZStack(alignment: .leading) {
+                        if viewModel.displayName.isEmpty {
+                            Text("Enter the display name")
+                                .foregroundColor(.gray)
+                                .padding(.leading, 12)
+                        }
+                        
+                        TextField("", text: $viewModel.displayName)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .font(.body)
+                            .foregroundColor(.white)
+                    }
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email")
                         .font(.caption)
                         .foregroundColor(.gray)
                     
-//                    TextField("Enter the email address", text: $viewModel.email)
-//                        .padding()
-//                        .background(
-//                            RoundedRectangle(cornerRadius: 8)
-//                                .stroke(Color.gray, lineWidth: 1)
-//                        )
-//                        .font(.body)
-//                        .foregroundColor(.white)
+                    
                     
                     ZStack(alignment: .leading) {
                         if viewModel.email.isEmpty {
@@ -114,7 +82,7 @@ struct SignUpEmailView: View {
                                 .foregroundColor(.gray)
                                 .padding(.leading, 12)
                         }
-        
+                        
                         TextField("", text: $viewModel.email)
                             .padding()
                             .background(
@@ -170,7 +138,7 @@ struct SignUpEmailView: View {
                                 .foregroundColor(.gray)
                                 .padding(.leading, 12)
                         }
-        
+                        
                         SecureField("", text: $viewModel.password)
                             .padding()
                             .background(
@@ -181,14 +149,7 @@ struct SignUpEmailView: View {
                             .foregroundColor(.white)
                     }
                     
-//                    SecureField("Password", text: $viewModel.password)
-//                        .padding()
-//                        .background(
-//                            RoundedRectangle(cornerRadius: 8)
-//                                .stroke(Color.gray, lineWidth: 1)
-//                        )
-//                        .font(.body)
-//                        .foregroundColor(.white)
+                    
                 }
                 
                 
@@ -219,7 +180,6 @@ struct SignUpEmailView: View {
             }
             .padding()
         }
-        //        .ignoresSafeArea()
     }
 }
 

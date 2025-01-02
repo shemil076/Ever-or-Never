@@ -95,16 +95,12 @@ struct MultiplayerQuizSession: Codable{
 }
 
 final class MultiplayerSessionManager{
-//    static let shared = MultiplayerSessionManager()
     
-    
-     init() {
+    init() {
         
     }
     
     private let multiplayerSessionCollection = Firestore.firestore().collection("multiplayerSession")
-    
-    //    private var dbListener: ListenerRegistration?
     
     
     func createMultiplayerSession(hostId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory], qustions: [Question] ) async throws -> (sessionId: String?, hostId: String){
@@ -141,7 +137,6 @@ final class MultiplayerSessionManager{
         }catch{
             print("Error creating initial quiz session: \(error.localizedDescription)")
             throw error
-//            return (sessionId, hostId)
         }
     }
     
@@ -159,17 +154,9 @@ final class MultiplayerSessionManager{
         
         let sessionRef = multiplayerSessionCollection.document(sessionId)
         
-//        sessionRef.updateData([
-//            "participants": FieldValue.arrayUnion([userId])
-//        ]){ error in
-//            if let error = error {
-//                print("Error occured while joining multiplayer session: \(error.localizedDescription)")
-//            }
-//            print("Player \(userId) successfully joined the multiplayer session \(sessionId).")
-//        }
         
         do {
-           try await sessionRef.updateData([
+            try await sessionRef.updateData([
                 "participants": FieldValue.arrayUnion([userId]),
                 "activeParticipants" : FieldValue.arrayUnion([userId])
             ])
@@ -204,14 +191,10 @@ final class MultiplayerSessionManager{
     func fetchSession(sessionId: String) async throws -> MultiplayerQuizSession {
         let document = try await multiplayerSessionCollection.document(sessionId).getDocument()
         
-        //        print("Found the document")
-        
         guard let data = document.data() else {
             print("No data related to session Id \(sessionId) was found")
             throw NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Session not found."])
         }
-        
-        //        print("Trying to decode the data")
         
         do {
             // Attempt to decode the session data
@@ -300,7 +283,7 @@ final class MultiplayerSessionManager{
         }
         var currentQuestionIndex = sessionData["currentQuestionIndex"] as? Int ?? 0
         let previousQuestionIndex = currentQuestionIndex
-            
+        
         
         if currentQuestionIndex < questions.count {
             currentQuestionIndex = currentQuestionIndex + 1
@@ -368,9 +351,9 @@ final class MultiplayerSessionManager{
             
             if lookingFor == LookingFor.forActiveParticipants{
                 guard let snapshot = snapshot,
-                   let sessionData = snapshot.data(),
+                      let sessionData = snapshot.data(),
                       let _ = sessionData["activeParticipants"] as? [String],
-                    let hostId = sessionData["hostId"] as? String else{
+                      let hostId = sessionData["hostId"] as? String else{
                     onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid session data."]))
                     return
                 }
@@ -382,23 +365,8 @@ final class MultiplayerSessionManager{
     }
     
     
-    
-    //    func stopObservingSession(){
-    //        dbListener?.remove()
-    //    }
-    
     func startQuiz(for sessionId: String) async throws -> Bool{
         print("Starting game for session: \(sessionId)")
-//        var isGameStarted : Bool = false
-//        multiplayerSessionCollection.document(sessionId).updateData(["isGameStarted": true]) { error in
-//            if let error = error {
-//                print("Error starting game: \(error.localizedDescription)")
-//            }else {
-//                print("Game started successfully")
-//                isGameStarted = true
-//                print("Session: \(sessionId) is now active")
-//            }
-//        }
         
         do {
             try await multiplayerSessionCollection.document(sessionId).updateData(["isGameStarted": true])
@@ -409,7 +377,6 @@ final class MultiplayerSessionManager{
             throw error
         }
         
-//        return isGameStarted
     }
     
     func endQuiz(for sessionId: String) -> Bool{
@@ -446,8 +413,6 @@ final class MultiplayerSessionManager{
                 }
             }
             
-//            try await docRef.updateData(["participants" : arrayReove(playerId)])
-            
             try await docRef.updateData(["participants": FieldValue.arrayRemove([playerId])])
             // Update the document
             try await docRef.updateData(["questionsAndAnswers": questionsAndAnswers])
@@ -477,22 +442,22 @@ final class MultiplayerSessionManager{
     }
     
     
-//  MARK:  Using Firebase Realtime database.
-//    func trackUserConnection(sessionId : String, playerId: String) {
-//        let database = Database.database().reference()
-//        let userStatusRef = database.child("activeParticipants/\(sessionId)/\(playerId)")
-//    
-//        print(userStatusRef)
-//        userStatusRef.setValue(true)
-//        
-//        userStatusRef.onDisconnectSetValue(nil)
-//
-//    }
+    //  MARK:  Using Firebase Realtime database.
+    //    func trackUserConnection(sessionId : String, playerId: String) {
+    //        let database = Database.database().reference()
+    //        let userStatusRef = database.child("activeParticipants/\(sessionId)/\(playerId)")
+    //
+    //        print(userStatusRef)
+    //        userStatusRef.setValue(true)
+    //
+    //        userStatusRef.onDisconnectSetValue(nil)
+    //
+    //    }
     func trackUserConnection(sessionId: String, playerId: String) {
         print("inside the status traker")
         let database = Database.database().reference()
         let userStatusRef = database.child("activeParticipants/\(sessionId)/\(playerId)")
-
+        
         print(userStatusRef.key ?? "No user key")
         // Set the user's status to true
         userStatusRef.setValue(true) { error, _ in
@@ -511,16 +476,11 @@ final class MultiplayerSessionManager{
                 }
             }
         }
-
+        
         // Set the disconnection handler
         userStatusRef.onDisconnectSetValue(nil)
         print("onDisconnect handler set for \(playerId) in session \(sessionId).")
     }
-
-//    for sessionId: String,
-//    lookingFor: LookingFor,
-//    onUpdate: @escaping (Any) -> Void,
-//    onError: @escaping (Error) -> Void
     
     func observeActiveParticipants(for sessionId: String, onUpdate: @escaping ([String]) -> Void) {
         let database = Database.database().reference()
@@ -546,7 +506,7 @@ final class MultiplayerSessionManager{
     
     
     
-//    MARK: Sync active participants with FireStore
+    //    MARK: Sync active participants with FireStore
     
     func syncActiveParticipantsWithFirestore(sessionId: String, activeUsers: [String], hostId: String) async throws{
         let sessionRef = multiplayerSessionCollection.document(sessionId)
@@ -566,7 +526,7 @@ final class MultiplayerSessionManager{
             
             print("Participants updated in Firestore.")
             
-        }catch { 
+        }catch {
             print("Error updating participants in Firestore: \(error)")
         }
         

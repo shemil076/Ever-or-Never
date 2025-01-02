@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct QuestionCountSelectionView: View {
-//    @Environment(\.presentationMode) var presentationMode
-//    @Environment(\.dismiss) private var dismiss
+    //    @Environment(\.presentationMode) var presentationMode
+    //    @Environment(\.dismiss) private var dismiss
     
     @State private var selectedQuestionCount = 0
     @Binding var isMultiplePlayerMode : Bool
@@ -41,12 +41,6 @@ struct QuestionCountSelectionView: View {
                                 .fontWeight(.semibold)
                                 .padding()
                             
-                            //            Picker("Question count", selection: $selectedQuestionCount){
-                            //                ForEach(1...20, id: \.self){ count in
-                            //                    Text("\(count)")
-                            //                }
-                            //            }.pickerStyle(.wheel)
-                            //                .padding()
                             
                             VStack(spacing: 20){
                                 ForEach($buttons) { $buttonAttributes in
@@ -74,11 +68,10 @@ struct QuestionCountSelectionView: View {
                                 }
                             }
                             .padding(.bottom, UIScreen.main.bounds.height / 6)
-            //                Spacer()
                         }
                     }
                     
-
+                    
                     Button {
                         if selectedQuestionCount <= 0 {
                             isShowAlert = true
@@ -102,15 +95,7 @@ struct QuestionCountSelectionView: View {
                             })
                         )
                     }
-    //                Spacer()
                     
-                    
-//                    NavigationLink(isActive: $isNavigateToCategoryView) {
-//                        CategorySelectionView(selectedQuestionCount: $selectedQuestionCount, isMultiplePlayerMode: $isMultiplePlayerMode)
-//                    } label: {
-//                        EmptyView()
-//                    }
-    //                .padding(.top, 50)
                 }
                 
             }
@@ -118,38 +103,7 @@ struct QuestionCountSelectionView: View {
                 CategorySelectionView(selectedQuestionCount: $selectedQuestionCount, isMultiplePlayerMode: $isMultiplePlayerMode)
             }
         }
-    
-//        .navigationBarBackButtonHidden(true)
-//            .toolbar{
-//                ToolbarItem(placement: .navigationBarLeading) {
-//                    Button {
-////                        presentationMode.wrappedValue.dismiss()
-//                        dismiss()
-//                    } label: {
-//                        HStack {
-//                            Image(systemName: "arrow.backward")
-//                                .foregroundColor(.white)
-//                                .background(
-//                                    Circle()
-//                                        .fill(Color(red: 28/255, green: 41/255, blue: 56/255))
-//                                        .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
-//                                        .overlay(content: {
-//                                            Circle()
-//                                                .stroke(Color.gray, lineWidth: 2)
-//                                        })
-//                                )
-//                        }
-//                    }
-//                    
-//                }
-//            }
         
-        
-        
-        //        .onAppear {
-        //            selectedQuestionCount = 0
-        //        }
-        //        .ignoresSafeArea()
     }
 }
 

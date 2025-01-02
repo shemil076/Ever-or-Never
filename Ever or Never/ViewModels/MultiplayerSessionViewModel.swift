@@ -85,7 +85,6 @@ class MultiplayerSessionViewModel: ObservableObject {
         //            self.sessionStatus.isLoading = false
         //        }
         do{
-            //            questions = try await QuestionsManager.shared.fetchQuestions(categoriers: categoriers, totalQuestionCount: totalQuestionCount)
             
             questions = try await QuestionsManager.shared.fetchRandomUniqueQuestions(userSeenQuestions: &userSeenQuestions, categories: categories, totalQuestionCount: totalQuestionCount, userId: userId)
             
@@ -123,11 +122,6 @@ class MultiplayerSessionViewModel: ObservableObject {
                 print("session created")
                 
                 
-                //                gameSessionManager.sessionID = sessionId
-                //                gameSessionManager.isMultiplayerGame = true
-                //                gameSessionManager.playerID = user!.id
-                //
-                //                initializeGameSessionManager(sessionId: sessionId!, playerId: user!.id)
                 gameSessionManager.sessionID = sessionId
                 gameSessionManager.playerID = user!.id
                 gameSessionManager.isMultiplayerGame = true
@@ -135,7 +129,6 @@ class MultiplayerSessionViewModel: ObservableObject {
                 multiplayerSessionManager.trackUserConnection(sessionId: sessionId!, playerId: user!.id)
             }
             participants.append(user!)
-            //            activeParticipants.append(user!.id)
             print(currentSessionId ?? "No id")
             
             setNoSessionError()
@@ -155,7 +148,6 @@ class MultiplayerSessionViewModel: ObservableObject {
             return
         }
         participants.append(user)
-        //        activeParticipants.append(user.id)
         
         defer {
             self.sessionStatus.isLoading = false
@@ -171,14 +163,13 @@ class MultiplayerSessionViewModel: ObservableObject {
             }
             let _: () = try await multiplayerSessionManager.joinMultiplayerSession(sessionId: sessionId, userId: user.id)
             
-             session = try await multiplayerSessionManager.fetchSession(sessionId: sessionId)
+            session = try await multiplayerSessionManager.fetchSession(sessionId: sessionId)
             
             self.currentSessionId = sessionId
             self.questions = session.questions
             try await UserHelperFunctions.updateSeenQuestions(userId: user.id, userSeenQuestions: userSeenQuestions, questions: questions)
             await updatedParticipants(for: session)
             
-            //            initializeGameSessionManager(sessionId: sessionId, playerId: user.id)
             gameSessionManager.sessionID = sessionId
             gameSessionManager.playerID = user.id
             gameSessionManager.isMultiplayerGame = true
@@ -324,7 +315,6 @@ class MultiplayerSessionViewModel: ObservableObject {
                 
                 self.isGameStarted = gameStarted
                 print("gameStarted: \(gameStarted)")
-                //            print("isGameStarted: \(self.isGameStarted)")
             }
             setNoSessionError()
         }catch{
@@ -358,7 +348,6 @@ class MultiplayerSessionViewModel: ObservableObject {
                     if let (isGameStarted, isGameEnded) = update as? (Bool, Bool){
                         self?.isGameStarted = isGameStarted
                         self?.isGameEnded = isGameEnded
-                        //                        print("Session state: isGameStarted = \(isGameStarted), isGameEnded = \(isGameEnded)")
                     }
                 }
             },
@@ -508,7 +497,6 @@ class MultiplayerSessionViewModel: ObservableObject {
         participantListener?.remove()
         participantListener = nil
         print("Stopped observing for session.")
-        //        MultiplayerSessionManager.shared.stopObservingSession()
     }
     
     func updatePreviousQuestionIndexes(){
@@ -562,7 +550,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         }
     }
     
-     func resetData() {
+    func resetData() {
         currentSessionId = nil
         questions = []
         yesAnswerCount = 0
@@ -620,19 +608,16 @@ class MultiplayerSessionViewModel: ObservableObject {
     }
     
     func setupObservers() {
-           Publishers.CombineLatest($participants, $activeParticipants)
-               .sink { [weak self] participants, activeParticipants in
-                   guard let self = self else { return }
-                   if participants.count != activeParticipants.count {
-                       Task {
-                           await self.syncActiveParticipants()
-                       }
-                   }
-               }
-               .store(in: &cancellables)
-       }
+        Publishers.CombineLatest($participants, $activeParticipants)
+            .sink { [weak self] participants, activeParticipants in
+                guard let self = self else { return }
+                if participants.count != activeParticipants.count {
+                    Task {
+                        await self.syncActiveParticipants()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
     
 }
-
-//hostId: String, numberOfQuestions: Int, qustionCategories: [QuestionCategory], qustions: [Question]
-

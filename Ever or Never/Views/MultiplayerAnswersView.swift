@@ -33,8 +33,6 @@ struct MultiplayerAnswersView: View {
                                 VStack {
                                     
                                     
-    //                                let currentQuestionIndex = multiplaySessionViewModel.questions.firstIndex(where: {$0.id == multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id})
-                                    
                                     let _ = multiplaySessionViewModel.questions.firstIndex(where: {$0.id == multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].id})
                                     
                                     if multiplaySessionViewModel.answers.indices.contains(multiplaySessionViewModel.currentQuestionIndex) {
@@ -67,7 +65,6 @@ struct MultiplayerAnswersView: View {
                                                 
                                                 
                                                 
-                                                //                                            ForEach(currentAnswers) { answer in
                                                 ForEach(Array(currentAnswers.enumerated()), id: \.element.id) { index, answer in
                                                     
                                                     HStack(alignment: .center,spacing: UIScreen.main.bounds.width * 0.1 ) {
@@ -91,7 +88,7 @@ struct MultiplayerAnswersView: View {
                                                         Text(multiplaySessionViewModel.participants[playerIndex!].displayName)
                                                             .foregroundColor(.white)
                                                         
-                                                    
+                                                        
                                                         
                                                         Text(answer.answer ? "Yes" : "No")
                                                             .foregroundColor(.white)
@@ -102,28 +99,7 @@ struct MultiplayerAnswersView: View {
                                                                     .cornerRadius(15)
                                                             )
                                                         Spacer()
-                                                        //                                                    ZStack{
-                                                        //
-                                                        //
-                                                        //
-                                                        //                                                    }.background(
-                                                        //                                                        Rectangle()
-                                                        //                                                            .fill(.white)
-                                                        //                                                            .frame(width: UIScreen.main.bounds .width / 2 , height: 50)
-                                                        //                                                            .cornerRadius(15)
-                                                        //                                                            .padding(.leading, UIScreen.main.bounds .width * 0.15)
-                                                        //
-                                                        //                                                    )
-                                                        //                                                    .padding(.leading, 10)
                                                         
-                                                        //                                                    ZStack{
-                                                        //
-                                                        //                                                    }.background(
-                                                        //                                                        Rectangle()
-                                                        //                                                            .fill(answer.answer ? Color(red: 78/255, green: 130/255, blue: 209/255) : .black)
-                                                        //                                                            .frame(width: UIScreen.main.bounds .width / 4 , height: 50)
-                                                        //                                                            .cornerRadius(15)
-                                                        //                                                    )
                                                     }.background(
                                                         Rectangle()
                                                             .fill(Color(red: 28/255, green: 41/255, blue: 56/255))
@@ -152,7 +128,7 @@ struct MultiplayerAnswersView: View {
                                                     showNotAllAnsweredAlert = true
                                                 }else{
                                                     Task{
-                                                         await multiplaySessionViewModel.updateQuestionIndexes()
+                                                        await multiplaySessionViewModel.updateQuestionIndexes()
                                                     }
                                                 }
                                                 
@@ -195,17 +171,6 @@ struct MultiplayerAnswersView: View {
                     }
                     
                     
-                    
-                    
-//                    NavigationLink(
-//                        destination: MultiplayerQuizEndView(),
-//                        isActive: $navigateToEncView,
-//                        label: { EmptyView() }
-//                    )
-                    
-                    
-                    
-                    
                 }.padding()
                     .onAppear{
                         navigateToQuiz = false
@@ -217,7 +182,6 @@ struct MultiplayerAnswersView: View {
                         
                     }
                     .onDisappear(){
-                        //            multiplaySessionViewModel.stopObservingSession()
                         isAllAnswered = false
                     }
                     .onChange(of: multiplaySessionViewModel.currentQuestionIndex) { 
@@ -230,11 +194,6 @@ struct MultiplayerAnswersView: View {
                         
                     }
                     .background(
-//                        NavigationLink(
-//                            destination: MultiplayerQuizView(),
-//                            isActive: $navigateToQuiz,
-//                            label: { EmptyView() }
-//                        )
                         
                         EmptyView()
                             .navigationDestination(isPresented: $navigateToQuiz, destination: {
@@ -243,21 +202,14 @@ struct MultiplayerAnswersView: View {
                     )
             }
         }
-
+        
         .navigationDestination(isPresented: $navigateToEncView, destination: {
             MultiplayerQuizEndView()
         })
         .navigationBarBackButtonHidden()
-        //        .ignoresSafeArea()
     }
 }
 
 #Preview {
     MultiplayerAnswersView()
 }
-
-//Rectangle()
-//    .fill(Color(red: 28/255, green: 41/255, blue: 56/255))
-//    .frame(width: UIScreen.main.bounds.width / 1.2, height: UIScreen.main.bounds.height / 1.5)
-//    .cornerRadius(20)
-//    .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 5)

@@ -18,7 +18,7 @@ class NetworkMonitor: ObservableObject {
             guard let self = self else { return }
             
             DispatchQueue.main.async {
-//                self.isConnected = path.status == .satisfied
+                //                self.isConnected = path.status == .satisfied
                 
                 if path.status == .satisfied {
                     self.isConnected = path.status == .satisfied
