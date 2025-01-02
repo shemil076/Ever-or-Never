@@ -89,6 +89,11 @@ struct SettingsView: View {
                 }
             }
         }
+        .background(
+            ViewBackground()
+                .ignoresSafeArea()
+        )
+        .scrollContentBackground(.hidden)
         .navigationTitle("Settings")
         .onAppear{
             Task{
@@ -97,6 +102,7 @@ struct SettingsView: View {
         }
     }
 }
+
 
 #Preview {
     NavigationStack { SettingsView(showSignInView: .constant(false)) }

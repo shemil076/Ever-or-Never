@@ -13,152 +13,157 @@ struct MultiplayerScoreView: View {
     @State private var navigateToModeSelection: Bool = false
     @State private var showAlert : Bool = false
     var body: some View {
-        ZStack{
-            ViewBackground()
-            VStack{
-                Spacer()
-                HStack{
-                    Text("Scoreboard")
-                        .font(.largeTitle)
-                        .foregroundStyle(Color.white)
+        NavigationStack{
+            ZStack{
+                ViewBackground()
+                VStack{
                     Spacer()
-                }
-                .padding(20)
-                
-                HStack{
-                    Text("Rank")
-                        .foregroundColor(.white)
-                        .padding(.leading, 20)
-                    Spacer()
-                    Text("Name")
-                        .foregroundColor(.white)
-                    Spacer()
-                    Text("Points")
-                        .foregroundColor(.white)
-                        .padding(.trailing, 20)
-                }.background(
-                    Rectangle()
-                        .background(Color.black)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .cornerRadius(15)
-
-                        
-                ).overlay(
-                    RoundedRectangle(cornerRadius: 15)
-                        .stroke(Color.gray, lineWidth: 1)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                )
-                .padding(.bottom, 10)
-                .padding(20)
-                
-                ForEach(Array(multiplaySessionViewModel.score.sorted(by: { $0.value > $1.value }).enumerated()), id: \.element.key) { index, element in
-                    // Extract values to simplify the code inside ForEach
-                    let userDisplayName = multiplaySessionViewModel.participants
-                        .first(where: { $0.id == element.key })?.displayName ?? "Unknown"
-                    let rank = index + 1
-                    let score = element.value
-
-                    HStack {
-                        // Display rank
-                        Text("#\(rank)")
-                            .foregroundColor(.white)
-                            .padding(.leading, 30)
-
+                    HStack{
+                        Text("Scoreboard")
+                            .font(.largeTitle)
+                            .foregroundStyle(Color.white)
                         Spacer()
-
-                        // Display user display name
-                        Text(userDisplayName)
-                            .foregroundColor(.white)
-
-                        Spacer()
-
-                        // Display score
-                        Text("\(score)")
-                            .foregroundColor(.white)
-                            .padding(.trailing, 30)
                     }
-                    .frame(height: 60) // Frame for HStack
-                    .background(Color(red: 28 / 255, green: 41 / 255, blue: 56 / 255))
-                    .overlay(
+                    .padding(20)
+                    
+                    HStack{
+                        Text("Rank")
+                            .foregroundColor(.white)
+                            .padding(.leading, 20)
+                        Spacer()
+                        Text("Name")
+                            .foregroundColor(.white)
+                        Spacer()
+                        Text("Points")
+                            .foregroundColor(.white)
+                            .padding(.trailing, 20)
+                    }.background(
+                        Rectangle()
+                            .background(Color.black)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .cornerRadius(15)
+
+                            
+                    ).overlay(
                         RoundedRectangle(cornerRadius: 15)
                             .stroke(Color.gray, lineWidth: 1)
                             .frame(height: 60)
                             .frame(maxWidth: .infinity)
                     )
-                    .cornerRadius(15)
-                    .padding(.horizontal,20) // Optional padding for spacing
-                    .overlay{
-                        if rank == 1 {
-                            Image("cup")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 100)
-                                .rotationEffect(Angle(degrees: -10))
-                                .offset(x: -UIScreen.main.bounds.width / 2.5)
+                    .padding(.bottom, 10)
+                    .padding(20)
+                    
+                    ForEach(Array(multiplaySessionViewModel.score.sorted(by: { $0.value > $1.value }).enumerated()), id: \.element.key) { index, element in
+                        // Extract values to simplify the code inside ForEach
+                        let userDisplayName = multiplaySessionViewModel.participants
+                            .first(where: { $0.id == element.key })?.displayName ?? "Unknown"
+                        let rank = index + 1
+                        let score = element.value
+
+                        HStack {
+                            // Display rank
+                            Text("#\(rank)")
+                                .foregroundColor(.white)
+                                .padding(.leading, 30)
+
+                            Spacer()
+
+                            // Display user display name
+                            Text(userDisplayName)
+                                .foregroundColor(.white)
+
+                            Spacer()
+
+                            // Display score
+                            Text("\(score)")
+                                .foregroundColor(.white)
+                                .padding(.trailing, 30)
+                        }
+                        .frame(height: 60) // Frame for HStack
+                        .background(Color(red: 28 / 255, green: 41 / 255, blue: 56 / 255))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(Color.gray, lineWidth: 1)
+                                .frame(height: 60)
+                                .frame(maxWidth: .infinity)
+                        )
+                        .cornerRadius(15)
+                        .padding(.horizontal,20) // Optional padding for spacing
+                        .overlay{
+                            if rank == 1 {
+                                Image("cup")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 100)
+                                    .rotationEffect(Angle(degrees: -10))
+                                    .offset(x: -UIScreen.main.bounds.width / 2.5)
+                            }
+                        }
+                        
+                    }
+
+                    
+    //           #AE82D1
+    //                List(multiplaySessionViewModel.score.sorted(by: { $0.key < $1.key }), id: \.key) { playerId, score in
+    //                    HStack {
+    //                        Text("Player ID: \(playerId)")
+    //                            .font(.body)
+    //                        Spacer()
+    //                        Text("Score: \(score)")
+    //                            .font(.headline)
+    //                    }
+    //                    .padding(.vertical, 5)
+    //
+    //                }
+                    
+                    Spacer()
+                    VStack(spacing:30){
+                        Button {
+                            navigateToModeSelection = true
+                        } label: {
+                            Text("New Game")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                                .frame(height: 55)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                                .cornerRadius(10)
                         }
                     }
+                    .padding(.top, 10)
+                    .padding(20)
                     
-                }
-
-                
-//           #AE82D1
-//                List(multiplaySessionViewModel.score.sorted(by: { $0.key < $1.key }), id: \.key) { playerId, score in
-//                    HStack {
-//                        Text("Player ID: \(playerId)")
-//                            .font(.body)
-//                        Spacer()
-//                        Text("Score: \(score)")
-//                            .font(.headline)
+                    
+//                    NavigationLink(isActive: $navigateToModeSelection) {
+//                        GameModeSelectionView(showSignInView: $showSignInView)
+//                    } label: {
+//                        EmptyView()
 //                    }
-//                    .padding(.vertical, 5)
-//                    
-//                }
-                
-                Spacer()
-                VStack(spacing:30){
-                    Button {
-                        navigateToModeSelection = true
-                    } label: {
-                        Text("New Game")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(height: 55)
-                            .frame(maxWidth: .infinity)
-                            .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                            .cornerRadius(10)
-                    }
+
+                    Spacer()
                 }
-                .padding(.top, 10)
+    //            .alert(isPresented: )
+                
+                
                 .padding(20)
-                
-                
-                NavigationLink(isActive: $navigateToModeSelection) {
-                    GameModeSelectionView(showSignInView: $showSignInView)
-                } label: {
-                    EmptyView()
+                .navigationBarBackButtonHidden()
+                .onAppear {
+                    print("Multiplayer Score View Appeared")
+                    multiplaySessionViewModel.calculateScores()
+                    multiplaySessionViewModel.endQuiz()
+                    multiplaySessionViewModel.observeForParticipantsStatus()
+                    multiplaySessionViewModel.observeForActiveParticipants()
+
                 }
-
-                Spacer()
+                .onDisappear(){
+                    multiplaySessionViewModel.stopObservingSession()
+                    multiplaySessionViewModel.resetData()
+                }
             }
-//            .alert(isPresented: )
-            
-            
-            .padding(20)
-            .navigationBarBackButtonHidden()
-            .onAppear {
-                print("Multiplayer Score View Appeared")
-                multiplaySessionViewModel.calculateScores()
-                multiplaySessionViewModel.endQuiz()
-                multiplaySessionViewModel.observeForParticipantsStatus()
-                multiplaySessionViewModel.observeForActiveParticipants()
-
-            }
-            .onDisappear(){
-                multiplaySessionViewModel.stopObservingSession()
-                multiplaySessionViewModel.resetData()
-            }
+        }
+        .navigationDestination(isPresented: $navigateToModeSelection) {
+            GameModeSelectionView(showSignInView: $showSignInView)
         }
     }
 }

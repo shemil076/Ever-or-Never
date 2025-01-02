@@ -14,6 +14,8 @@ struct GameModeSelectionView: View {
 
             ZStack{
                 ViewBackground()
+                    .ignoresSafeArea()
+                
                 VStack(alignment: .center, spacing : UIScreen.main.bounds.height * 0.1){
                     HStack(alignment: .firstTextBaseline){
                         Text("Select the Mode")

@@ -12,7 +12,7 @@ final class SignUpEmailViewModel: ObservableObject{
     @Published var email = ""
     @Published var password = ""
     @Published var displayName = ""
-   
+    
     @Published var dob = Date()
     
     func signUp() async throws{
@@ -35,39 +35,95 @@ struct SignUpEmailView: View {
     var body: some View {
         ZStack{
             ViewBackground()
+                .ignoresSafeArea()
             
-//            DualCircles()
+            //            DualCircles()
+            
+//            ZStack(alignment: .leading) {
+//                if sessionIdInput.isEmpty {
+//                    Text("Enter the code")
+//                        .foregroundColor(.gray) // Set placeholder text color
+//                        .padding(.leading, 12)   // Match padding inside the TextField
+//                }
+//                
+//                TextField("", text: $sessionIdInput)
+//                    .padding()
+//                    .background(
+//                        RoundedRectangle(cornerRadius: 8)
+//                            .stroke(Color.gray, lineWidth: 1)
+//                    )
+//                    .font(.body)
+//                    .foregroundColor(.white)
+//            }
+
             
             VStack(alignment: .leading, spacing: 20){
                 
                 Text("User Information")
                     .font(.title)
+                    .foregroundStyle(.white)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Display Name")
                         .font(.caption)
                         .foregroundColor(.gray)
                     
-                    TextField("Enter the display name", text: $viewModel.displayName)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                        .font(.body)
+//                    TextField("Enter the display name", text: $viewModel.displayName)
+//                        .padding()
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 8)
+//                                .stroke(Color.gray, lineWidth: 1)
+//                        )
+//                        .font(.body)
+//                        .foregroundColor(.white)
+                    
+                                ZStack(alignment: .leading) {
+                                    if viewModel.displayName.isEmpty {
+                                        Text("Enter the display name")
+                                            .foregroundColor(.gray)
+                                            .padding(.leading, 12)
+                                    }
+                    
+                                    TextField("", text: $viewModel.displayName)
+                                        .padding()
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.gray, lineWidth: 1)
+                                        )
+                                        .font(.body)
+                                        .foregroundColor(.white)
+                                }
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Email")
                         .font(.caption)
                         .foregroundColor(.gray)
                     
-                    TextField("Enter the email address", text: $viewModel.email)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                        .font(.body)
+//                    TextField("Enter the email address", text: $viewModel.email)
+//                        .padding()
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 8)
+//                                .stroke(Color.gray, lineWidth: 1)
+//                        )
+//                        .font(.body)
+//                        .foregroundColor(.white)
+                    
+                    ZStack(alignment: .leading) {
+                        if viewModel.email.isEmpty {
+                            Text("Enter the email")
+                                .foregroundColor(.gray)
+                                .padding(.leading, 12)
+                        }
+        
+                        TextField("", text: $viewModel.email)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .font(.body)
+                            .foregroundColor(.white)
+                    }
                 }
                 
                 // Date of Birth Field with Calendar Button
@@ -79,6 +135,7 @@ struct SignUpEmailView: View {
                     HStack {
                         TextField("DD/MM/YYYY", text: $dateOfBirth)
                             .padding()
+                            .foregroundColor(.gray)
                             .font(.body)
                         
                         Button(action: {
@@ -89,8 +146,11 @@ struct SignUpEmailView: View {
                                 .padding()
                             
                             DatePicker("Date of Birth", selection: $viewModel.dob, in: ...Date(), displayedComponents: .date)
+                                .foregroundColor(.white)
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
+                                .tint(.white)
+                            
                         }
                     }
                     .background(
@@ -104,63 +164,62 @@ struct SignUpEmailView: View {
                         .font(.caption)
                         .foregroundColor(.gray)
                     
-                    SecureField("Password", text: $viewModel.password)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray, lineWidth: 1)
-                        )
-                        .font(.body)
+                    ZStack(alignment: .leading) {
+                        if viewModel.password.isEmpty {
+                            Text("Password")
+                                .foregroundColor(.gray)
+                                .padding(.leading, 12)
+                        }
+        
+                        SecureField("", text: $viewModel.password)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray, lineWidth: 1)
+                            )
+                            .font(.body)
+                            .foregroundColor(.white)
+                    }
+                    
+//                    SecureField("Password", text: $viewModel.password)
+//                        .padding()
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 8)
+//                                .stroke(Color.gray, lineWidth: 1)
+//                        )
+//                        .font(.body)
+//                        .foregroundColor(.white)
                 }
                 
-//                                TextField("Email...", text: $viewModel.email)
-//                                    .padding()
-//                                    .background(Color.gray.opacity(0.4))
-//                                    .cornerRadius(10)
-//                                TextField("Display name...", text: $viewModel.displayName)
-//                                    .padding()
-//                                    .background(Color.gray.opacity(0.4))
-//                                    .cornerRadius(10)
-                
-//                                HStack{
-//                                    Text("Select the date of birth")
-//                                    Spacer()
-//                                    DatePicker("Date of Birth", selection: $viewModel.dob, in: ...Date(), displayedComponents: .date)
-//                                        .datePickerStyle(.compact)
-//                                        .labelsHidden()
-//                                }
-//                                SecureField("Password...", text: $viewModel.password)
-//                                    .padding()
-//                                    .background(Color.gray.opacity(0.4))
-//                                    .cornerRadius(10)
                 
                 
-                                Button {
-                                    Task {
-                                        do {
-                                            try await viewModel.signUp()
-                                            showSignInView = false
-                                            return
-                                        }catch {
                 
-                                            print(error)
-                                        }
-                
-                                    }
-                                } label: {
-                                    Text("Sign Up")
-                                        .font(.headline)
-                                        .foregroundStyle(.white)
-                                        .frame(height: 55)
-                                        .frame(maxWidth: .infinity)
-                                        .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                                        .cornerRadius(10)
-                                }
-                                .padding(.bottom , 20)
+                Button {
+                    Task {
+                        do {
+                            try await viewModel.signUp()
+                            showSignInView = false
+                            return
+                        }catch {
+                            
+                            print(error)
+                        }
+                        
+                    }
+                } label: {
+                    Text("Sign Up")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                        .frame(height: 55)
+                        .frame(maxWidth: .infinity)
+                        .background(Color(red: 78/255, green: 130/255, blue: 209/255))
+                        .cornerRadius(10)
+                }
+                .padding(.bottom , 20)
             }
             .padding()
         }
-//        .ignoresSafeArea()
+        //        .ignoresSafeArea()
     }
 }
 

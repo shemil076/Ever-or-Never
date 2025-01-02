@@ -19,16 +19,16 @@ struct ContentView: View {
         ZStack {
             NavigationStack {
                 GameModeSelectionView(showSignInView: $showSignInView)
-                    .onChange(of: scenePhase) { newValue in
-                        handleScenePhaseChange(newValue)
+                    .onChange(of: scenePhase) {
+                        handleScenePhaseChange(scenePhase)
                     }
             }
             
-            NavigationLink(isActive: $navigateToGameModeSelection) {
-                GameModeSelectionView(showSignInView: $showSignInView)
-            } label: {
-                EmptyView()
-            }
+//            NavigationLink(isActive: $navigateToGameModeSelection) {
+//                GameModeSelectionView(showSignInView: $showSignInView)
+//            } label: {
+//                EmptyView()
+//            }
 
         }
         .onAppear {
@@ -45,8 +45,8 @@ struct ContentView: View {
 
     func handleScenePhaseChange(_ scenePhase: ScenePhase)  {
         guard gameSessionManager.isMultiplayerGame,
-              let sessionID = gameSessionManager.sessionID,
-              let playerID = gameSessionManager.playerID else { return }
+             let _ = gameSessionManager.sessionID,
+              let _ = gameSessionManager.playerID else { return }
 
         switch scenePhase {
         case .active:

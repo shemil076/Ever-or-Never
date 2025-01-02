@@ -369,7 +369,7 @@ final class MultiplayerSessionManager{
             if lookingFor == LookingFor.forActiveParticipants{
                 guard let snapshot = snapshot,
                    let sessionData = snapshot.data(),
-                   let activeUsers = sessionData["activeParticipants"] as? [String],
+                      let _ = sessionData["activeParticipants"] as? [String],
                     let hostId = sessionData["hostId"] as? String else{
                     onError(NSError(domain: "MultiplayerSession", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid session data."]))
                     return
@@ -493,7 +493,7 @@ final class MultiplayerSessionManager{
         let database = Database.database().reference()
         let userStatusRef = database.child("activeParticipants/\(sessionId)/\(playerId)")
 
-        print(userStatusRef.key)
+        print(userStatusRef.key ?? "No user key")
         // Set the user's status to true
         userStatusRef.setValue(true) { error, _ in
             if let error = error {

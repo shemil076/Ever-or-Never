@@ -21,7 +21,7 @@ final class ProfileViewModel: ObservableObject {
     }
     
     func togglePremiumStatus()async throws{
-        guard var user else { return }
+        guard let user else { return }
         let currentPremiumStatus = user.isPremium
         
         Task{
@@ -40,15 +40,15 @@ struct ProfileView: View {
         List{
              if let user = profileViewModel.user {
                  Text("UserId: \(user.id)")
-                 Text("Email: \(user.email)")
-                 Text("profile created date: \(user.dateCreated)")
+                 Text("Email: \(String(describing: user.email))")
+                 Text("profile created date: \(String(describing: user.dateCreated))")
                  
                  Button{
                      Task{
                          try? await profileViewModel.togglePremiumStatus()
                      }
                  } label: {
-                     Text("User is premium \((user.isPremium ?? false).description.capitalized)")
+                     Text("User is premium \((user.isPremium).description.capitalized)")
                  }
             }
             

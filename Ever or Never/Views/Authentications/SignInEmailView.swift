@@ -32,6 +32,7 @@ struct SignInEmailView: View {
         ZStack{
             
             ViewBackground()
+                .ignoresSafeArea()
             
 
             
@@ -78,17 +79,21 @@ struct SignInEmailView: View {
 //                    .cornerRadius(10)
                 
                 Button {
-                    Task {
-                        
-                        do {
-                            try await viewModel.signIn()
-                            showSignInView = false
-                            return
-                        }catch {
-                            print(error)
-                            print("Please register first")
-                            showAlert = true
+                    if (!viewModel.email.isEmpty && !viewModel.password.isEmpty){
+                        Task {
+                            
+                            do {
+                                try await viewModel.signIn()
+                                showSignInView = false
+                                return
+                            }catch {
+                                print(error)
+                                print("Please register first")
+                                showAlert = true
+                            }
                         }
+                    } else {
+                        showAlert = true
                     }
                 } label: {
                     Text("Sign in")

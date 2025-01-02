@@ -105,7 +105,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         resetData()
         
         print("running this")
-        try await loadCurrentUser()
+        await loadCurrentUser()
         await loadQuestions(categories:selectedCategories, totalQuestionCount: totalQuestionCount)
         print(questions.count)
         
@@ -136,7 +136,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             }
             participants.append(user!)
             //            activeParticipants.append(user!.id)
-            print(currentSessionId)
+            print(currentSessionId ?? "No id")
             
             setNoSessionError()
         }catch{
@@ -176,7 +176,7 @@ class MultiplayerSessionViewModel: ObservableObject {
             self.currentSessionId = sessionId
             self.questions = session.questions
             try await UserHelperFunctions.updateSeenQuestions(userId: user.id, userSeenQuestions: userSeenQuestions, questions: questions)
-            try await updatedParticipants(for: session)
+            await updatedParticipants(for: session)
             
             //            initializeGameSessionManager(sessionId: sessionId, playerId: user.id)
             gameSessionManager.sessionID = sessionId
