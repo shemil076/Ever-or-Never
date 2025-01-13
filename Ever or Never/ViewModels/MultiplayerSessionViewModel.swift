@@ -388,9 +388,13 @@ class MultiplayerSessionViewModel: ObservableObject {
                     let parsedAnswers = answersArray.compactMap { answerDict -> MultiplayerAnswer? in
                         guard
                             let playerId = answerDict["playerId"] as? String,
-                            let answer = answerDict["answer"] as? Bool
-                        else { return nil }
-                        return MultiplayerAnswer(playerId: playerId, answer: answer)
+                            let answer = answerDict["answer"] as? Bool,
+                            let createdAt = answerDict["createdAt"]
+                        else {
+                            print("NO CreateAt \(answerDict)")
+                            return nil }
+                        print("this is the crteatedAt \(createdAt)")
+                        return MultiplayerAnswer(playerId: playerId, answer: answer, createdAt: (createdAt as AnyObject).dateValue())
                     }
                     
                     return MultiplayerQuestionAnswer(id: id, question: question, answers: parsedAnswers)
@@ -513,7 +517,7 @@ class MultiplayerSessionViewModel: ObservableObject {
         
         for questionAnswer in self.answers {
             // Iterate through each answer in the current question
-            for answer in questionAnswer.answers {
+            for answer in questionAnswer.answers.sorted(by: {$0.createdAt < $1.createdAt}) {
                 if activeParticipants.contains(answer.playerId) {
                     // Extract the player ID and the answer value
                     let playerId = answer.playerId

@@ -128,6 +128,7 @@ struct GameModeSelectionView: View {
             
             
         }
+        .navigationBarBackButtonHidden()
     }
 }
 

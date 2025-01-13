@@ -63,10 +63,55 @@ struct TypeScore: Codable{
 }
 
 
-struct MultiplayerAnswer: Identifiable, Codable, Equatable{
+//struct MultiplayerAnswer: Identifiable, Codable, Equatable{
+//    var id = UUID()
+//    let playerId: String
+//    let answer: Bool
+//    let createdAt: Date
+//}
+
+
+struct MultiplayerAnswer: Identifiable, Codable, Equatable {
     var id = UUID()
     let playerId: String
     let answer: Bool
+    let createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case playerId
+        case answer
+        case createdAt
+    }
+    
+    init(id: UUID = UUID(), playerId: String, answer: Bool, createdAt: Date) {
+        self.id = id
+        self.playerId = playerId
+        self.answer = answer
+        self.createdAt = createdAt
+    }
+    
+    // Custom initializer for decoding
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = UUID(uuidString: try container.decode(String.self, forKey: .id)) ?? UUID()
+        self.playerId = try container.decode(String.self, forKey: .playerId)
+        self.answer = try container.decode(Bool.self, forKey: .answer)
+        self.createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+    }
+    
+    // Custom encoding
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id.uuidString, forKey: .id)
+        try container.encode(playerId, forKey: .playerId)
+        try container.encode(answer, forKey: .answer)
+        try container.encode(self.createdAt, forKey: .createdAt)
+        
+        // Encode `createdAt` as timestamp
+//        try container.encode(createdAt.timeIntervalSince1970, forKey: .createdAt)
+       
+    }
 }
 
 struct MultiplayerQuestionAnswer : Identifiable, Codable, Equatable{

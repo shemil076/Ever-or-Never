@@ -32,6 +32,7 @@ struct SignUpEmailView: View {
     @State private var dateOfBirth: String = ""
     @State private var displayName: String = ""
     @Binding var showSignInView : Bool
+    @State var showAlert = false
     var body: some View {
         ZStack{
             ViewBackground()
@@ -156,16 +157,20 @@ struct SignUpEmailView: View {
                 
                 
                 Button {
-                    Task {
-                        do {
-                            try await viewModel.signUp()
-                            showSignInView = false
-                            return
-                        }catch {
+                    if !viewModel.password.isEmpty || !viewModel.email.isEmpty || !viewModel.displayName.isEmpty {
+                        Task {
+                            do {
+                                try await viewModel.signUp()
+                                showSignInView = false
+                                return
+                            }catch {
+                                
+                                print(error)
+                            }
                             
-                            print(error)
                         }
-                        
+                    } else {
+                        showAlert = true
                     }
                 } label: {
                     Text("Sign Up")
@@ -179,6 +184,11 @@ struct SignUpEmailView: View {
                 .padding(.bottom , 20)
             }
             .padding()
+        }
+        .alert("Please fill the fields", isPresented: $showAlert){
+            Button("OK"){
+                showAlert = false
+            }
         }
     }
 }

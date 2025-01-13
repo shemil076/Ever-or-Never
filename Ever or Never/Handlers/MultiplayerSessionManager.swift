@@ -220,6 +220,8 @@ final class MultiplayerSessionManager{
         
         var questionsAndAnswers = sessionData["questionsAndAnswers"] as? [[String: Any]] ?? []
         
+        print("submitting answers")
+        
         if let questionIndex = questionsAndAnswers.firstIndex(where: { $0["question"] as? String == question}){
             var questionData = questionsAndAnswers[questionIndex]
             var answers = questionData["answers"] as? [[String: Any]] ?? []
@@ -227,12 +229,15 @@ final class MultiplayerSessionManager{
             let newAnswer: [String: Any] = [
                 "id": UUID().uuidString,
                 "playerId" : userId,
-                "answer" : answer
+                "answer" : answer,
+                "createdAt": Date()
             ]
             answers.append(newAnswer)
             
             questionData["answers"] = answers
             questionsAndAnswers[questionIndex] = questionData
+            
+            print("All good")
         }else{
             let newQuestion: [String: Any] = [
                 "question" : question,
@@ -241,15 +246,18 @@ final class MultiplayerSessionManager{
                     [
                         "id": UUID().uuidString,
                         "playerId" : userId,
-                        "answer" : answer
+                        "answer" : answer,
+                        "createdAt": Date()
                     ]
                 ]
             ]
             
             questionsAndAnswers.append(newQuestion)
+            print("All good")
         }
         
         try await documentRef.updateData(["questionsAndAnswers": questionsAndAnswers])
+    
         
         print("Answer successfully submitted for question '\(question)' in session \(sessionId).")
         return try await fetchSession(sessionId: sessionId)
@@ -334,6 +342,7 @@ final class MultiplayerSessionManager{
                     return
                 }
                 print("Answers are updated: \(answers.count)")
+                print("Here are the submitted answers: \(answers)")
                 onUpdate(answers)
             }
             
