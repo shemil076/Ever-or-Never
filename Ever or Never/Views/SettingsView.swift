@@ -24,7 +24,7 @@ final class SettingsViewModel : ObservableObject {
         try await AuthenticationManager.shared.resetPassword(email: email)
     }
     
-    func deleteAccount() async throws{        
+    func deleteAccount() async throws{
         try await AuthenticationManager.shared.deleteUser()
     }
 }
@@ -45,11 +45,17 @@ struct SettingsView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 50, height: 50)
+                            .accessibilityLabel("User Avatar")
                         
                         VStack(alignment: .leading){
                             Text(user.displayName)
                                 .font(.headline)
+                                .accessibilityLabel("Display Name")
+                                .accessibilityValue(user.displayName)
+                            
                             Text(user.id)
+                                .accessibilityLabel("User ID")
+                                .accessibilityValue(user.id)
                         }
                     }
                 }
@@ -64,6 +70,9 @@ struct SettingsView: View {
                     }
                 }
             }
+            .accessibilityLabel("Log out button")
+            .accessibilityHint("Logs the user out and returns to the sign-in screen")
+            
             Button(role: .destructive) {
                 Task{
                     do {
@@ -76,6 +85,8 @@ struct SettingsView: View {
             } label: {
                 Text("Delete Account")
             }
+            .accessibilityLabel("Delete account button")
+            .accessibilityHint("Deletes your account and all associated data permanently")
             
             
             Button("Reset Password"){
@@ -88,6 +99,8 @@ struct SettingsView: View {
                     }
                 }
             }
+            .accessibilityLabel("Reset password button")
+            .accessibilityHint("Resets your password and sends a reset email")
         }
         .background(
             ViewBackground()

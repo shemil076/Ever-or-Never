@@ -25,6 +25,7 @@ struct MultiplayLobby: View {
                 VStack(spacing: 25) {
                     if multiplaySessionViewModel.sessionStatus.isLoading{
                         ProgressView()
+                            .accessibilityLabel("Loading session data")
                     }else{
                         VStack(alignment:.leading) {
                             ZStack{
@@ -34,12 +35,16 @@ struct MultiplayLobby: View {
                                             .font(.title)
                                             .foregroundColor(.white)
                                             .padding(.trailing, UIScreen.main.bounds .width * 0.45 )
+                                            .accessibilityLabel("Session ID")
+                                            .accessibilityHint("Displays the unique session identifier")
                                     }
                                     
                                     HStack{
                                         Text(multiplaySessionViewModel.currentSessionId ?? "id will be generated here")
                                             .font(.title2)
                                             .foregroundColor(.white.opacity(0.8))
+                                            .accessibilityLabel("Session ID Value")
+                                            .accessibilityHint(multiplaySessionViewModel.currentSessionId != nil ? "Unique identifier for this session" : "Session ID is not yet generated")
                                         
                                     }
                                     .background(
@@ -94,6 +99,8 @@ struct MultiplayLobby: View {
                                             .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.25)
                                     )
                             )
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("Session ID and actions")
                         }
                         
                         
@@ -102,6 +109,7 @@ struct MultiplayLobby: View {
                                 Text("Participants")
                                     .font(.largeTitle)
                                     .foregroundColor(.white)
+                                    .accessibilityLabel("Participants list")
                                 
                                 Spacer()
                             }
@@ -112,6 +120,9 @@ struct MultiplayLobby: View {
                                         Text(participant.displayName)
                                             .font(.headline)
                                             .foregroundStyle(.white)
+                                            .accessibilityLabel("Participant name")
+                                            .accessibilityValue(participant.displayName)
+                                        
                                     }.background(
                                         Rectangle()
                                             .fill(Color(red: 30/255, green: 47/255, blue: 75/255))
@@ -146,6 +157,8 @@ struct MultiplayLobby: View {
                                     .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
+                                    .accessibilityLabel("Continue to quiz")
+                                    .accessibilityHint("Starts the quiz for all participants")
                             }
                             .padding(.top, 20)
                         }

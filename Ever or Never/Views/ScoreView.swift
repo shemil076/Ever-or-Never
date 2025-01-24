@@ -26,6 +26,8 @@ struct ScoreView: View {
                                 .font(.title)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
+                                .accessibilityHidden(true)
+                                .accessibilityLabel("Scoreboard Title")
                             Spacer()
                         }
                         .padding(.top, 50)
@@ -38,6 +40,7 @@ struct ScoreView: View {
                                 .scaledToFit()
                                 .frame(width: UIScreen.main.bounds.width / 2)
                                 .padding(20)
+                                .accessibilityHidden(true)
                             
                             
                             VStack{
@@ -47,16 +50,21 @@ struct ScoreView: View {
                                     .foregroundColor(.gray)
                                     .fontWeight(.bold)
                                     .padding(.top, 20)
+                                    .accessibilityLabel("Your Final Score Title")
                                 
                                 HStack{
                                     Text("\(singlePlayerViwModel.yesAnswerCount)")
                                         .font(.custom("", size: 65))
                                         .fontWeight(.bold)
                                         .foregroundColor(.white)
+                                        .accessibilityLabel("Your score")
+                                        .accessibilityValue("\(singlePlayerViwModel.yesAnswerCount)")
                                     
                                     Text("/ \(singlePlayerViwModel.questions.count * 10)")
                                         .font(.title)
                                         .foregroundColor(.gray)
+                                        .accessibilityLabel("Total possible score")
+                                        .accessibilityValue("\(singlePlayerViwModel.questions.count * 10)")
                                 }
                                 
                                 
@@ -75,6 +83,7 @@ struct ScoreView: View {
                                     .frame(maxWidth: .infinity)
                                     .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                                     .cornerRadius(10)
+                                    .accessibilityLabel("Start a new game")
                             }
                             
                         }

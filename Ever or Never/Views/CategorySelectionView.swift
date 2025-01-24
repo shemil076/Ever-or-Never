@@ -22,9 +22,6 @@ struct CategorySelectionView: View {
     @State private var isContinueDisabled: Bool = false
     
     
-    private let adaptiveColumn = [
-        GridItem(.adaptive(minimum: 150))
-    ]
     var body: some View {
         NavigationStack{
             ZStack{
@@ -33,102 +30,50 @@ struct CategorySelectionView: View {
                 
                 
                 VStack(){
-                    HStack{
-                        Text("Category Selection")
-                            .font(.title)
-                            .foregroundStyle(.white)
-                            .fontWeight(.semibold)
-                            .padding()
-                        
-                        Spacer()
+                    
+                    HeaderView()
+                    
+                    CategorySelectionGrid(
+                        availableCategories: QuestionCategory.allCases,
+                        selectedCategories: $selectedCategories
+                    )
+                    ContinueButton(
+                        isLoading: singleGameSessionViewModel.sessionStatus.isLoading,
+                        isDisabled: isContinueDisabled,
+                        action: continueButtonAction
+                    )
+                    .padding(.horizontal, 20)
+                    
+                    .alert(isPresented: Binding(get: {
+                        isShowAlert || (singleGameSessionViewModel.sessionStatus.isError)
+                    }, set: { newValue in
+                        if !newValue {
+                            isShowAlert = false
+                            singleGameSessionViewModel.sessionStatus.isError = false
+                        }
+                    })) {
+                        if isShowAlert {
+                            return Alert(
+                                title: Text("Category not selected!"),
+                                message: Text("Please select at least one category."),
+                                dismissButton: .default(Text("OK"), action: {
+                                    isShowAlert = false
+                                })
+                            )
+                        } else {
+                            return Alert(
+                                title: Text("Something went wrong"),
+                                message: Text(singleGameSessionViewModel.sessionStatus.errorDescription ?? "Error occurred"),
+                                dismissButton: .default(Text("OK"))
+                            )
+                        }
                     }
-                    ScrollView{
-                        LazyVGrid(columns: adaptiveColumn, spacing: 30){
-                            ForEach(availableCategories, id: \.self){ category in
-                                MultipleSelectionRow(category: category, isSelected: selectedCategories.contains(category)){
-                                    if selectedCategories.contains(category){
-                                        selectedCategories.removeAll{$0 == category}
-                                    }else{
-                                        selectedCategories.append(category)
-                                    }
-                                }
-                                
-                            }
-                        }
-                        .padding(.horizontal, UIScreen.main.bounds.width / 15 )
-                        .padding(.vertical,30)
-                        
-                    }.frame(height: UIScreen.main.bounds.height / 1.5)
-                    
-                    Button {
-                        
-                        if selectedCategories.isEmpty {
-                            isShowAlert = true
-                        }else{
-                            isContinueDisabled = true
-                            Task {
-                                print("isMultiplePlayerMode: \(isMultiplePlayerMode)")
-                                await initializeGameSession(isMultiplePlayerMode: isMultiplePlayerMode)
-                                isGameSessionReady = true //
-                            }
-                        }
-                        
-                    } label: {
-                        
-                        if singleGameSessionViewModel.sessionStatus.isLoading{
-                            ProgressView()
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(height: 55)
-                                .frame(maxWidth: .infinity)
-                                .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                                .cornerRadius(10)
-                        } else{
-                            
-                            Text("CONTINUE")
-                                .font(.headline)
-                                .foregroundStyle(.white)
-                                .frame(height: 55)
-                                .frame(maxWidth: .infinity)
-                                .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                                .cornerRadius(10)
-                        }
-                        
-                        
-                    }.disabled(isContinueDisabled)
-                    
-                        .padding(.horizontal, 20)
-                    
-                        .alert(isPresented: Binding(get: {
-                            isShowAlert || (singleGameSessionViewModel.sessionStatus.isError)
-                        }, set: { newValue in
-                            if !newValue {
-                                isShowAlert = false
-                                singleGameSessionViewModel.sessionStatus.isError = false
-                            }
-                        })) {
-                            if isShowAlert {
-                                return Alert(
-                                    title: Text("Category not selected!"),
-                                    message: Text("Please select at least one category."),
-                                    dismissButton: .default(Text("OK"), action: {
-                                        isShowAlert = false
-                                    })
-                                )
-                            } else {
-                                return Alert(
-                                    title: Text("Something went wrong"),
-                                    message: Text(singleGameSessionViewModel.sessionStatus.errorDescription ?? "Error occurred"),
-                                    dismissButton: .default(Text("OK"))
-                                )
-                            }
-                        }
                 }
                 .navigationDestination(isPresented: $isGameSessionReady) {
                     if isMultiplePlayerMode {
                         MultiplayLobby()
                     } else {
-                        GameSessionView(singlePlayerViwModel: singleGameSessionViewModel)
+                        GameSessionView(singlePlayerViewModel: singleGameSessionViewModel)
                     }
                 }
                 
@@ -141,8 +86,20 @@ struct CategorySelectionView: View {
     }
     
     
+    private func continueButtonAction(){
+        if selectedCategories.isEmpty {
+            isShowAlert = true
+        }else{
+            isContinueDisabled = true
+            Task {
+                print("isMultiplePlayerMode: \(isMultiplePlayerMode)")
+                await initializeGameSession(isMultiplePlayerMode: isMultiplePlayerMode)
+                isGameSessionReady = true
+            }
+        }
+    }
     
-    func initializeGameSession(isMultiplePlayerMode : Bool) async {
+    private func initializeGameSession(isMultiplePlayerMode : Bool) async {
         if !isMultiplePlayerMode{
             await singleGameSessionViewModel.initializeGameSession(selectedCategories: selectedCategories, totalQuestionCount:  selectedQuestionCount)
             await singleGameSessionViewModel.loadQuestions(categories: selectedCategories, totalQuestionCount: selectedQuestionCount)
@@ -179,8 +136,59 @@ struct MultipleSelectionRow : View {
                         .cornerRadius(15)
                 )
         }
+        .accessibilityLabel(category.rawValue)
+        .accessibilityHint("Tap to select or deselect the category")
         .padding(.horizontal, 40)
         .padding(.vertical, 10)
         
+    }
+}
+
+struct CategorySelectionGrid : View {
+    
+    let availableCategories: [QuestionCategory]
+    @Binding var selectedCategories: [QuestionCategory]
+    
+    private let adaptiveColumns = [
+        GridItem(.adaptive(minimum: 150))
+    ]
+    
+    var body: some View {
+        ScrollView{
+            LazyVGrid(columns: adaptiveColumns, spacing: 30){
+                ForEach(availableCategories, id: \.self){ category in
+                    MultipleSelectionRow(category: category, isSelected: selectedCategories.contains(category)){
+                        if selectedCategories.contains(category){
+                            selectedCategories.removeAll{$0 == category}
+                        }else{
+                            selectedCategories.append(category)
+                        }
+                    }
+                    
+                }
+            }
+            .padding(.horizontal, UIScreen.main.bounds.width / 15 )
+            .padding(.vertical,30)
+            
+        }
+        .frame(height: UIScreen.main.bounds.height / 1.5)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Category selection grid")
+        .accessibilityHint("Tap to select or deselect categories")
+    }
+}
+
+struct HeaderView: View {
+    var body: some View {
+        HStack{
+            Text("Category Selection")
+                .font(.title)
+                .foregroundStyle(.white)
+                .fontWeight(.semibold)
+                .padding()
+                .accessibilityLabel("Category Selection Header")
+                .accessibilityHint("Displays the title for category selection screen")
+            Spacer()
+        }
     }
 }

@@ -43,11 +43,13 @@ struct MultiplayerQuizView: View {
                                         .cornerRadius(10)
                                         .foregroundColor(.blue)
                                         .animation(.easeInOut, value: progress)
+                                        .accessibilityValue("\(Int(progress * 100))% completed")
                                 }
                                 .frame(width: UIScreen.main.bounds.width / 2)
                                 
                                 Text(" \(multiplaySessionViewModel.currentQuestionIndex + 1) / \(multiplaySessionViewModel.questions.count) ")
                                     .foregroundStyle(.white)
+                                    .accessibilityLabel("Question \(multiplaySessionViewModel.currentQuestionIndex + 1) of \(multiplaySessionViewModel.questions.count)")
                             }
                             
                             HStack{
@@ -55,6 +57,7 @@ struct MultiplayerQuizView: View {
                                     .multilineTextAlignment(.leading)
                                     .foregroundColor(.gray)
                                     .fontWeight(.semibold)
+                                    .accessibilityLabel("Prompt to select an answer for the question")
                                 Spacer()
                             }
                             .padding(20)
@@ -64,6 +67,7 @@ struct MultiplayerQuizView: View {
                                 .font(.title)
                                 .foregroundColor(.white)
                                 .fontWeight(.semibold)
+                                .accessibilityLabel("Question: \(multiplaySessionViewModel.questions[multiplaySessionViewModel.currentQuestionIndex].question)")
                             
                             VStack(spacing: 30){
                                 Button {
@@ -92,7 +96,11 @@ struct MultiplayerQuizView: View {
                                         .frame(height: 60)
                                         .frame(maxWidth: .infinity)
                                         .background(Color(red: 78/255, green: 130/255, blue: 209/255))
-                                    .cornerRadius(20)                            }
+                                        .cornerRadius(20)
+                                }
+                                .accessibilityLabel("Yes button")
+                                .accessibilityHint("Submits 'Yes' as your answer for the current question.")
+                                
                                 
                                 Button {
                                     if multiplaySessionViewModel.currentQuestionIndex < (multiplaySessionViewModel.questions.count) {
@@ -124,11 +132,14 @@ struct MultiplayerQuizView: View {
                                                 .frame(maxWidth: .infinity)
                                         )
                                 }
+                                .accessibilityLabel("No button")
+                                .accessibilityHint("Submits 'No' as your answer for the current question.")
                             }
                             .padding(20)
                             
                             Text("\(multiplaySessionViewModel.currentQuestionIndex + 1) of \(multiplaySessionViewModel.questions.count) Questions")
                                 .foregroundColor(.gray)
+                                .accessibilityLabel("Question \(multiplaySessionViewModel.currentQuestionIndex + 1) of \(multiplaySessionViewModel.questions.count)")
                             
                         }
                         

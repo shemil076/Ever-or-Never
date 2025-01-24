@@ -22,6 +22,8 @@ struct MultiplayerScoreView: View {
                         Text("Scoreboard")
                             .font(.largeTitle)
                             .foregroundStyle(Color.white)
+                            .accessibilityLabel("Scoreboard Header")
+                            .accessibilityAddTraits(.isHeader)
                         Spacer()
                     }
                     .padding(20)
@@ -30,13 +32,22 @@ struct MultiplayerScoreView: View {
                         Text("Rank")
                             .foregroundColor(.white)
                             .padding(.leading, 20)
+                            .accessibilityLabel("Rank Column Header")
+                            .accessibilityAddTraits(.isHeader)
+                        
                         Spacer()
                         Text("Name")
                             .foregroundColor(.white)
+                            .accessibilityLabel("Name Column Header")
+                            .accessibilityAddTraits(.isHeader)
+                        
                         Spacer()
                         Text("Points")
                             .foregroundColor(.white)
                             .padding(.trailing, 20)
+                            .accessibilityLabel("Points Column Header")
+                            .accessibilityAddTraits(.isHeader)
+                        
                     }.background(
                         Rectangle()
                             .background(Color.black)
@@ -66,12 +77,14 @@ struct MultiplayerScoreView: View {
                             Text("#\(rank)")
                                 .foregroundColor(.white)
                                 .padding(.leading, 30)
+                                .accessibilityLabel("Rank \(rank)")
                             
                             Spacer()
                             
                             // Display user display name
                             Text(userDisplayName)
                                 .foregroundColor(.white)
+                                .accessibilityLabel("Player name: \(userDisplayName)")
                             
                             Spacer()
                             
@@ -79,6 +92,7 @@ struct MultiplayerScoreView: View {
                             Text("\(score)")
                                 .foregroundColor(.white)
                                 .padding(.trailing, 30)
+                                .accessibilityLabel("Score: \(score)")
                         }
                         .frame(height: 60) // Frame for HStack
                         .background(Color(red: 28 / 255, green: 41 / 255, blue: 56 / 255))
@@ -98,6 +112,7 @@ struct MultiplayerScoreView: View {
                                     .frame(width: 100)
                                     .rotationEffect(Angle(degrees: -10))
                                     .offset(x: -UIScreen.main.bounds.width / 2.5)
+                                    .accessibilityLabel("Trophy for first place")
                             }
                         }
                         
@@ -116,6 +131,8 @@ struct MultiplayerScoreView: View {
                                 .frame(maxWidth: .infinity)
                                 .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                                 .cornerRadius(10)
+                                .accessibilityLabel("Start a New Game")
+                                .accessibilityAddTraits(.isButton)
                         }
                     }
                     .padding(.top, 10)

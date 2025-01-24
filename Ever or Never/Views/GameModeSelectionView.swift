@@ -22,94 +22,20 @@ struct GameModeSelectionView: View {
                         .foregroundColor(.white)
                         .font(.largeTitle)
                         .padding()
-                    
-                    
                     Spacer()
                 }
                 
-                NavigationLink(destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(false))){
-                    VStack{
-                        ZStack{
-                            HStack{
-                                Spacer()
-                                
-                            }
-                            HStack{
-                                VStack(alignment: .leading){
-                                    Text("Single player")
-                                        .font(.title)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                    
-                                    Text("Solo gameplay experience.")
-                                        .foregroundColor(.white)
-                                }.padding()
-                                    .frame(width: UIScreen.main.bounds.width * 0.7)
-                                
-                                Image(systemName: "arrow.up.forward")
-                                    .foregroundColor(.black)
-                                    .background(
-                                        Rectangle()
-                                            .fill(Color.white)
-                                            .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
-                                            .cornerRadius(50)
-                                    )
-                                    .padding(.top, 40)
-                            }
-                            
-                        }.background(
-                            Rectangle()
-                                .fill(Color.white.opacity(0.2))
-                                .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.16)
-                                .cornerRadius(15)
-                        )
-                        
-                    }
-                    
-                    
-                }
+                ModeSelectionCard(
+                    title: "Single Player",
+                    description: "Solo gameplay experience.",
+                    destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(false))
+                )
                 
-                NavigationLink(destination: MultiplayerOptionView()){
-                    VStack{
-                        ZStack{
-                            HStack{
-                                Spacer()
-                                
-                            }
-                            HStack{
-                                VStack(alignment: .leading){
-                                    Text("Multiplayer")
-                                        .font(.title)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                    
-                                    Text("Interactive group experience.")
-                                        .foregroundColor(.white)
-                                }.padding()
-                                    .frame(width: UIScreen.main.bounds.width * 0.7)
-                                
-                                Image(systemName: "arrow.up.forward")
-                                    .foregroundColor(.black)
-                                    .background(
-                                        Rectangle()
-                                            .fill(Color.white)
-                                            .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
-                                            .cornerRadius(50)
-                                    )
-                                    .padding(.top, 40)
-                            }
-                            
-                        }.background(
-                            Rectangle()
-                                .fill(Color.white.opacity(0.2))
-                                .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.16)
-                                .cornerRadius(15)
-                        )
-                        
-                    }
-                    
-                }.padding()
-            }
+                ModeSelectionCard(
+                    title: "Multiplayer",
+                    description: "Interactive group experience.",
+                    destination: MultiplayerOptionView()
+                )            }
             .padding()
             .task{
                 try? await profileViewModel.loadCurrentUser()
@@ -122,6 +48,8 @@ struct GameModeSelectionView: View {
                     } label: {
                         Image(systemName: "gear")
                             .font(.headline)
+                            .accessibilityLabel("Settings")
+                            .accessibilityHint("Open app settings")
                     }
                 }
             }
@@ -134,4 +62,56 @@ struct GameModeSelectionView: View {
 
 #Preview {
     GameModeSelectionView(showSignInView: .constant(false))
+}
+
+
+struct ModeSelectionCard<Destination: View>: View {
+    let title : String
+    let description : String
+    let destination : Destination
+    
+    var body: some View {
+        NavigationLink(destination:destination){
+            VStack{
+                ZStack{
+                    HStack{
+                        Spacer()
+                        
+                    }
+                    HStack{
+                        VStack(alignment: .leading){
+                            Text(title)
+                                .font(.title)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                            
+                            Text(description)
+                                .foregroundColor(.white)
+                        }.padding()
+                            .frame(width: UIScreen.main.bounds.width * 0.7)
+                        
+                        Image(systemName: "arrow.up.forward")
+                            .foregroundColor(.black)
+                            .background(
+                                Rectangle()
+                                    .fill(Color.white)
+                                    .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
+                                    .cornerRadius(50)
+                            )
+                            .padding(.top, 40)
+                    }
+                    
+                }.background(
+                    Rectangle()
+                        .fill(Color.white.opacity(0.2))
+                        .frame(width: UIScreen.main.bounds .width * 0.9 , height: UIScreen.main.bounds.height * 0.16)
+                        .cornerRadius(15)
+                )
+                .padding(.horizontal, 20)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(title). \(description)")
+                
+            }
+        }
+    }
 }

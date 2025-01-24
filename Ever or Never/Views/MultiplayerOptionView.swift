@@ -28,18 +28,21 @@ struct MultiplayerOptionView: View {
                     Text("Multiplayer")
                         .font(.largeTitle)
                         .foregroundColor(.white)
+                        .accessibilityAddTraits(.isHeader)
                     
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Join Now")
                             .font(.caption)
                             .foregroundColor(.white)
+                            .accessibilityLabel("Join Now Section")
                         
                         ZStack(alignment: .leading) {
                             if sessionIdInput.isEmpty {
                                 Text("Enter the code")
                                     .foregroundColor(.gray) // Set placeholder text color
                                     .padding(.leading, 12)   // Match padding inside the TextField
+                                    .accessibilityHidden(true)
                             }
                             
                             TextField("", text: $sessionIdInput)
@@ -50,6 +53,9 @@ struct MultiplayerOptionView: View {
                                 )
                                 .font(.body)
                                 .foregroundColor(.white)
+                                .accessibilityLabel("Session ID Input")
+                                .accessibilityHint("Enter the session ID to join a multiplayer game")
+                            
                         }
                     }
                     Button {
@@ -79,6 +85,8 @@ struct MultiplayerOptionView: View {
                     } label: {
                         if showProgressView{
                             ProgressView()
+                                .accessibilityLabel("Loading")
+                                .accessibilityHint("Joining the game session")
                         }else{
                             Text("JOIN THE GAME")
                                 .font(.headline)
@@ -87,9 +95,13 @@ struct MultiplayerOptionView: View {
                                 .background(Color(red: 78/255, green: 130/255, blue: 209/255))
                                 .foregroundColor(.white)
                                 .cornerRadius(15)
+                                .accessibilityLabel("Join the Game Button")
+                                .accessibilityHint("Tap to join a multiplayer game session")
                         }
                     }
                     .disabled(isJoinDisabled)
+                    .accessibilityHint(isJoinDisabled ? "Button is disabled" : "Button is enabled")
+                    
                     
                     
                     .alert(isPresented: Binding(get: {
@@ -124,6 +136,7 @@ struct MultiplayerOptionView: View {
                         Text("Or")
                             .font(.caption)
                             .foregroundColor(.gray)
+                            .accessibilityLabel("Alternative option available")
                         
                         VStack{
                             Divider()
@@ -131,12 +144,14 @@ struct MultiplayerOptionView: View {
                                 .background(Color.gray)
                         }
                         .padding()
+                        .accessibilityHidden(true)
                     }
                     
                     Text("Create a New Session")
                         .font(.title)
                         .foregroundColor(.white)
                         .fontWeight(.semibold)
+                        .accessibilityAddTraits(.isHeader)
                     
                     NavigationLink(destination: QuestionCountSelectionView(isMultiplePlayerMode: .constant(true))){
                         
@@ -163,6 +178,7 @@ struct MultiplayerOptionView: View {
                                                 .frame(width: UIScreen.main.bounds .width * 0.1, height: UIScreen.main.bounds .width * 0.1)
                                                 .cornerRadius(50)
                                         )
+                                        .accessibilityHidden(true)
                                 }
                                 
                             }.background(
@@ -177,7 +193,8 @@ struct MultiplayerOptionView: View {
                         }
                         
                     }
-                    
+                    .accessibilityLabel("Create a new game session")
+                    .accessibilityHint("Navigate to create a new multiplayer game")
                     .disabled(isJoinDisabled)
                     
                 }

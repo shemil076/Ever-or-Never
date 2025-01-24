@@ -40,6 +40,7 @@ struct QuestionCountSelectionView: View {
                                 .foregroundColor(.white)
                                 .fontWeight(.semibold)
                                 .padding()
+                                .accessibilityAddTraits(.isHeader)
                             
                             
                             VStack(spacing: 20){
@@ -65,6 +66,9 @@ struct QuestionCountSelectionView: View {
                                             .foregroundColor( .white )
                                             .cornerRadius(10)
                                     }
+                                    .accessibilityLabel("Select \(buttonAttributes.associatedValue.rawValue) questions")
+                                    .accessibilityHint(buttonAttributes.isButtonClicked ? "Selected" : "Double-tap to select")
+                                    .accessibilityAddTraits(buttonAttributes.isButtonClicked ? .isSelected : [])
                                 }
                             }
                             .padding(.bottom, UIScreen.main.bounds.height / 6)
@@ -86,6 +90,8 @@ struct QuestionCountSelectionView: View {
                             .cornerRadius(10)
                     }
                     .padding(.bottom, UIScreen.main.bounds.height / 25)
+                    .accessibilityLabel("Continue")
+                    .accessibilityHint("Navigates to the category selection screen")
                     .alert(isPresented: $isShowAlert) {
                         Alert(
                             title: Text("Question count not selected"),

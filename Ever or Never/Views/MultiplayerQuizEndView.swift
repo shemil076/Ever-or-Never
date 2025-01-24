@@ -20,6 +20,9 @@ struct MultiplayerQuizEndView: View {
                         Image("end-quiz")
                             .resizable()
                             .scaledToFit()
+                            .accessibilityLabel("Illustration representing the end of the quiz")
+                            .accessibilityHidden(false)
+                        
                     }.padding(20)
                         .padding(.top, UIScreen.main.bounds.height / 5)
                     
@@ -28,11 +31,15 @@ struct MultiplayerQuizEndView: View {
                             .font(.title)
                             .foregroundStyle(.white)
                             .fontWeight(.semibold)
+                            .accessibilityLabel("Quiz Complete")
+                            .accessibilityHint("This indicates that all quiz questions have been answered.")
                         
                         
                         Text("Checkout the Scoreboard for the points")
                             .foregroundStyle(.white)
                             .padding(.top,5)
+                            .accessibilityLabel("Check your points")
+                            .accessibilityHint("You can proceed to the scoreboard to view your points.")
                     }
                     
                     VStack{
@@ -48,11 +55,14 @@ struct MultiplayerQuizEndView: View {
                                 .cornerRadius(10)
                         }.padding(20)
                             .padding(.top, UIScreen.main.bounds.height / 9)
+                            .accessibilityLabel("Continue Button")
+                            .accessibilityHint("Tap to navigate to the scoreboard and view your quiz results.")
                         
                     }
                     
                     
                 }
+                .accessibilityElement(children: .contain)
             }
         }
         .navigationBarBackButtonHidden()
